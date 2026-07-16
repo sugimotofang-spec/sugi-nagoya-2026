@@ -1,4 +1,4 @@
-const CACHE_NAME = 'sugi-nagoya-v5';
+const CACHE_NAME = 'sugi-nagoya-v6';
 const CORE_ASSETS = ['名古屋0805-0811旅遊手冊.html', 'manifest.json'];
 
 self.addEventListener('install', (event) => {

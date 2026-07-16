@@ -28,6 +28,12 @@
         .weather-card { background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 1.5rem; padding: 1.25rem; }
         .map-btn { background: #1d4ed8; color: white; font-weight: 800; border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.7rem; display: inline-flex; align-items: center; gap: 0.3rem; }
         .food-pill { background: white; border: 1px solid #fde68a; color: #92400e; padding: 0.4rem 0.7rem; border-radius: 999px; font-size: 0.7rem; font-weight: 700; display: inline-flex; align-items: center; gap: 0.25rem; }
+        .main-page { display: none; }
+        .main-page.active-page { display: block; }
+        .main-nav-btn.active { color: #9a3412; }
+        .main-nav-btn.active .nav-underline { background-color: #9a3412; }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
     </style>
 </head>
 <body class="bg-slate-50 text-slate-800">
@@ -35,8 +41,11 @@
     <nav class="sticky top-0 z-50 bg-white/95 backdrop-blur-md border-b border-slate-200">
         <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
             <span class="font-black text-orange-900 text-lg tracking-tighter">SUGI NAGOYA 2026</span>
-            <div class="flex gap-4 font-bold text-xs text-slate-500">
-                <a href="#itinerary">行程</a><a href="#budget">預算</a><a href="#expense">記帳</a><a href="#tools">工具</a>
+            <div class="flex gap-4 font-bold text-xs text-slate-500" id="mainNavBtns">
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1" data-target="itinerary">行程<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1" data-target="budget">預算<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1" data-target="expense">記帳<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1" data-target="tools">工具<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
             </div>
         </div>
     </nav>
@@ -52,62 +61,70 @@
     <main class="max-w-4xl mx-auto px-4 py-10 space-y-12">
         
         <!-- 戰術工具箱 -->
-        <section id="tools" class="scroll-mt-20 space-y-4">
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-black text-slate-800 flex items-center gap-2"><span>🛡️</span> Sugi 領隊戰術工具</h3>
-                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+        <section id="tools" class="main-page space-y-3">
+            <h2 class="text-2xl font-black text-slate-800 mb-1">🧰 領隊工具箱</h2>
+            <p class="text-[10px] text-slate-400 -mt-2 mb-3">點標題展開／收合各項工具</p>
+
+            <details class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden" open>
+                <summary class="cursor-pointer p-5 font-black text-slate-800 flex items-center justify-between"><span class="flex items-center gap-2"><span>🛡️</span> Sugi 領隊戰術連結</span><span class="text-slate-300 text-xs">▾</span></summary>
+                <div class="px-5 pb-5 grid grid-cols-1 sm:grid-cols-2 gap-2">
                     <a href="https://award.tabelog.com/hyakumeiten/ramen_aichi/2025" target="_blank" class="bg-slate-900 text-white px-4 py-3 rounded-xl font-bold text-xs text-center">🏆 2025 拉麵百名店名單</a>
                     <a href="https://www.klook.com/zh-TW/city/24-nagoya-things-to-do/" target="_blank" class="bg-orange-500 text-white px-4 py-3 rounded-xl font-bold text-xs text-center">🧡 Klook 名古屋活動預訂</a>
-                    <a href="https://www.kintetsu.co.jp/foreign/chinese-han/shimakaze/" target="_blank" class="bg-orange-700 text-white px-4 py-3 rounded-xl font-bold text-xs text-center">🚄 志摩之風特急預約</a>
                     <a href="https://www.aonamiline.co.jp/train" target="_blank" class="bg-blue-600 text-white px-4 py-3 rounded-xl font-bold text-xs text-center">🚃 青波線時刻表查詢</a>
                 </div>
-            </div>
+            </details>
 
             <!-- 匯率速算機 -->
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-4">
-                <h3 class="font-black text-slate-800 flex items-center gap-2"><span>💱</span> 匯率速算機</h3>
-                <div class="flex items-center gap-2 flex-wrap">
-                    <span class="text-[10px] font-bold text-slate-400">快速設定匯率　1 NTD ＝</span>
-                    <div id="rateButtons" class="flex gap-1"></div>
-                    <span class="text-[10px] font-bold text-slate-400">JPY</span>
-                </div>
-                <div class="grid grid-cols-2 gap-3 items-center">
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400">台幣 NTD</label>
-                        <input id="fxNTD" type="number" inputmode="decimal" placeholder="輸入台幣" oninput="fxFromNTD()" class="w-full text-lg font-black border border-slate-200 rounded-xl px-3 py-2 mt-1">
+            <details class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <summary class="cursor-pointer p-5 font-black text-slate-800 flex items-center justify-between"><span class="flex items-center gap-2"><span>💱</span> 匯率速算機</span><span class="text-slate-300 text-xs">▾</span></summary>
+                <div class="px-5 pb-5 space-y-4">
+                    <div class="flex items-center gap-2 flex-wrap">
+                        <span class="text-[10px] font-bold text-slate-400">快速設定匯率　1 NTD ＝</span>
+                        <div id="rateButtons" class="flex gap-1"></div>
+                        <span class="text-[10px] font-bold text-slate-400">JPY</span>
                     </div>
-                    <div>
-                        <label class="text-[10px] font-bold text-slate-400">日幣 JPY</label>
-                        <input id="fxJPY" type="number" inputmode="decimal" placeholder="輸入日幣" oninput="fxFromJPY()" class="w-full text-lg font-black border border-slate-200 rounded-xl px-3 py-2 mt-1">
+                    <div class="grid grid-cols-2 gap-3 items-center">
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400">台幣 NTD</label>
+                            <input id="fxNTD" type="number" inputmode="decimal" placeholder="輸入台幣" oninput="fxFromNTD()" class="w-full text-lg font-black border border-slate-200 rounded-xl px-3 py-2 mt-1">
+                        </div>
+                        <div>
+                            <label class="text-[10px] font-bold text-slate-400">日幣 JPY</label>
+                            <input id="fxJPY" type="number" inputmode="decimal" placeholder="輸入日幣" oninput="fxFromJPY()" class="w-full text-lg font-black border border-slate-200 rounded-xl px-3 py-2 mt-1">
+                        </div>
+                    </div>
+                    <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
+                        <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🍜 拉麵一碗</p><p class="text-xs font-black text-orange-800" data-fx-jpy="1000">-</p></div>
+                        <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🥤 超商飲料</p><p class="text-xs font-black text-orange-800" data-fx-jpy="150">-</p></div>
+                        <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🚕 短程計程車</p><p class="text-xs font-black text-orange-800" data-fx-jpy="1500">-</p></div>
+                        <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🎰 扭蛋一次</p><p class="text-xs font-black text-orange-800" data-fx-jpy="500">-</p></div>
                     </div>
                 </div>
-                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 text-center">
-                    <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🍜 拉麵一碗</p><p class="text-xs font-black text-orange-800" data-fx-jpy="1000">-</p></div>
-                    <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🥤 超商飲料</p><p class="text-xs font-black text-orange-800" data-fx-jpy="150">-</p></div>
-                    <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🚕 短程計程車</p><p class="text-xs font-black text-orange-800" data-fx-jpy="1500">-</p></div>
-                    <div class="bg-orange-50 rounded-xl p-2"><p class="text-[9px] text-slate-400 mb-1">🎰 扭蛋一次</p><p class="text-xs font-black text-orange-800" data-fx-jpy="500">-</p></div>
-                </div>
-            </div>
+            </details>
 
             <!-- 景點/餐廳一鍵地圖速查 -->
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="font-black text-slate-800 flex items-center gap-2"><span>📍</span> 景點／餐廳一鍵地圖速查</h3>
-                <p class="text-[10px] text-slate-400">不用逐日翻找，全部景點餐廳一次列出</p>
-                <div id="quickMapSpots" class="flex flex-wrap gap-2"></div>
-                <div id="quickMapFood" class="flex flex-wrap gap-2"></div>
-            </div>
+            <details class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <summary class="cursor-pointer p-5 font-black text-slate-800 flex items-center justify-between"><span class="flex items-center gap-2"><span>📍</span> 景點／餐廳一鍵地圖速查</span><span class="text-slate-300 text-xs">▾</span></summary>
+                <div class="px-5 pb-5 space-y-3">
+                    <p class="text-[10px] text-slate-400">不用逐日翻找，全部景點餐廳一次列出</p>
+                    <div id="quickMapSpots" class="flex flex-wrap gap-2"></div>
+                    <div id="quickMapFood" class="flex flex-wrap gap-2"></div>
+                </div>
+            </details>
 
             <!-- 打包清單 -->
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="font-black text-slate-800 flex items-center gap-2"><span>🎒</span> 出發前打包清單</h3>
-                <p class="text-[10px] text-slate-400">勾選後會自動記憶，換手機或清瀏覽器資料會重置</p>
-                <div id="packingList" class="space-y-3"></div>
-            </div>
+            <details class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <summary class="cursor-pointer p-5 font-black text-slate-800 flex items-center justify-between"><span class="flex items-center gap-2"><span>🎒</span> 出發前打包清單</span><span class="text-slate-300 text-xs">▾</span></summary>
+                <div class="px-5 pb-5 space-y-3">
+                    <p class="text-[10px] text-slate-400">勾選後會自動記憶，換手機或清瀏覽器資料會重置</p>
+                    <div id="packingList" class="space-y-3"></div>
+                </div>
+            </details>
 
             <!-- 實用貼士 -->
-            <div class="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm space-y-3">
-                <h3 class="font-black text-slate-800 flex items-center gap-2"><span>💡</span> 日本旅遊實用貼士</h3>
-                <div class="space-y-3 text-xs text-slate-600 leading-relaxed">
+            <details class="bg-white rounded-3xl border border-slate-200 shadow-sm overflow-hidden">
+                <summary class="cursor-pointer p-5 font-black text-slate-800 flex items-center justify-between"><span class="flex items-center gap-2"><span>💡</span> 日本旅遊實用貼士</span><span class="text-slate-300 text-xs">▾</span></summary>
+                <div class="px-5 pb-5 space-y-3 text-xs text-slate-600 leading-relaxed">
                     <p>💴 <strong>金錢支付：</strong>日本仍以現金為主，超商與餐廳雖多可刷卡，但小店與神社建議備足現金；7-11、AEON 等超商 ATM 可用海外提款卡直接提領日幣。</p>
                     <p>📶 <strong>網路：</strong>建議出發前比價辦理 eSIM 或租用 WiFi 分享器，機場入境大廳通常也有實體 SIM 卡櫃檯可現場購買。</p>
                     <p>🌦️ <strong>天氣：</strong>8月名古屋悶熱（約34°C），午後常有雷陣雨，建議帶輕便雨具、防曬與補水瓶，室內冷氣強可備薄外套給孩子。</p>
@@ -115,11 +132,11 @@
                     <p>🚸 <strong>親子提醒：</strong>電車／公車上盡量保持安靜，嬰兒車或行李上下車請留意月台間隙；藥妝店多有兒童專用成藥可應急。</p>
                     <p>🈺 <strong>語言：</strong>可先安裝 Google 翻譯離線日文包，多數景點看板有中文/英文標示，餐廳可指著菜單照片點餐。</p>
                 </div>
-            </div>
+            </details>
         </section>
 
         <!-- 每日行程 -->
-        <section id="itinerary" class="scroll-mt-20">
+        <section id="itinerary" class="main-page">
             <div class="mb-4 flex justify-between items-end">
                 <h2 class="text-2xl font-black text-slate-800">📅 精確行程詳解</h2>
                 <p class="text-[10px] text-slate-400 italic">左右滑動天數按鈕</p>
@@ -131,7 +148,7 @@
         </section>
 
         <!-- 預算看板 -->
-        <section id="budget" class="bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
+        <section id="budget" class="main-page bg-white p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
             <h2 class="text-2xl font-black text-slate-800 mb-6 text-center">💰 預算精算看板</h2>
             <div class="flex flex-col md:flex-row items-center gap-8">
                 <div class="w-full md:w-1/2 h-[300px]"><canvas id="budgetChart"></canvas></div>
@@ -154,7 +171,7 @@
         </section>
 
         <!-- 實際花費記帳本 -->
-        <section id="expense" class="scroll-mt-20 bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
+        <section id="expense" class="main-page bg-white p-6 md:p-8 rounded-[2.5rem] shadow-xl border border-slate-100">
             <div class="text-center mb-6">
                 <h2 class="text-2xl font-black text-slate-800">📝 實際花費記帳本</h2>
                 <p class="text-[11px] text-slate-400 mt-1">出發前已付款項已自動列入，旅途中隨手記一筆，掌握花了多少</p>
@@ -181,16 +198,16 @@
             </div>
 
             <!-- 每日花費長條圖 -->
-            <div class="mb-6">
-                <h3 class="font-black text-slate-700 text-xs mb-2">📊 每日花費統計　<span class="font-normal text-slate-400">(不含出發前固定支出)</span></h3>
-                <div class="h-[220px]"><canvas id="dailyExpenseChart"></canvas></div>
-            </div>
+            <details class="mb-4 border border-slate-200 rounded-3xl overflow-hidden">
+                <summary class="cursor-pointer p-4 font-black text-slate-700 text-xs flex items-center justify-between">📊 每日花費統計　<span class="font-normal text-slate-400">(不含出發前固定支出)</span><span class="text-slate-300">▾</span></summary>
+                <div class="px-4 pb-4 h-[220px]"><canvas id="dailyExpenseChart"></canvas></div>
+            </details>
 
             <!-- 固定/已確認費用明細（點擊展開看明細） -->
-            <div class="mb-6">
-                <h3 class="font-black text-slate-700 text-xs mb-2">🧾 已確認/預付費用明細　<span class="font-normal text-slate-400">(點一下類別可展開明細)</span></h3>
-                <div id="fixedCostList" class="space-y-2"></div>
-            </div>
+            <details class="mb-6 border border-slate-200 rounded-3xl overflow-hidden">
+                <summary class="cursor-pointer p-4 font-black text-slate-700 text-xs flex items-center justify-between">🧾 已確認/預付費用明細　<span class="font-normal text-slate-400">(點一下類別可展開明細)</span><span class="text-slate-300">▾</span></summary>
+                <div class="px-4 pb-4"><div id="fixedCostList" class="space-y-2"></div></div>
+            </details>
 
             <!-- 快速記一筆 -->
             <div class="bg-orange-50 border border-orange-100 rounded-3xl p-5 mb-6">
@@ -216,8 +233,10 @@
             </div>
 
             <!-- 明細列表 -->
-            <h3 class="font-black text-slate-700 text-xs mb-2">📅 逐日花費紀錄</h3>
-            <div id="expenseList" class="space-y-4"></div>
+            <details class="mb-4 border border-slate-200 rounded-3xl overflow-hidden" open>
+                <summary class="cursor-pointer p-4 font-black text-slate-700 text-xs flex items-center justify-between">📅 逐日花費紀錄<span class="text-slate-300">▾</span></summary>
+                <div class="px-4 pb-4"><div id="expenseList" class="space-y-4"></div></div>
+            </details>
 
             <div class="flex justify-end mt-4">
                 <button onclick="resetExpenses()" class="text-[10px] text-slate-400 underline font-bold">清空所有記帳紀錄</button>
@@ -244,10 +263,10 @@
               mapQuery: "名古屋港水族館", coords: {lat: 35.0847, lon: 136.8836}, climateNote: "名古屋港周邊 8 月平均高溫約 33°C／低溫約 26°C，海風稍涼但濕度仍高。",
               foodSpots: [{name: "JETTY (港區景觀餐廳)", mapQuery: "JETTY 名古屋港"}, {name: "熱田蓬萊軒 本店 (鰻魚飯)", mapQuery: "あつた蓬莱軒 本店"}],
               costBreakdown: { transport: 800, food: 6000, ticket: 6200, other: 2000 } },
-            { day: 4, date: "8/8 (六)", title: "志摩之風之旅", emoji: "🚄", spot: "伊勢神宮 / 托福橫丁", food: "托福橫丁小吃 (赤福冰)", cost: "志摩之風約: ¥3,650/人", transport: "去程 10:25 志摩之風；回程近鐵急行。", desc: "週末搭乘奢華火車去伊勢。專攻內宮與老街，把體力留在吃美食與看風景。回程搭平價急行回名古屋。", links: [{title: "志摩之風預訂", url: "https://www.kintetsu.co.jp/foreign/chinese-han/shimakaze/"}], klook: null, wifeNote: "志摩之風需提前一個月早上 10:30 搶票。今天住 R&B 第三晚。",
+            { day: 4, date: "8/8 (六)", title: "伊勢神宮之旅", emoji: "⛩️", spot: "伊勢神宮 / 托福橫丁", food: "托福橫丁小吃 (赤福冰)", cost: "近鐵特急單程 ¥3,080/大人（標準車廂，近鐵官網價）；兒童約半價，實際請以官網為準", transport: "去程、回程皆搭近鐵特急，名古屋⇄伊勢市站，車程約1小時20分。", desc: "週末搭近鐵特急去伊勢。專攻內宮與老街，把體力留在吃美食與看風景。", links: [{title: "近鐵特急資訊", url: "https://www.kintetsu.co.jp/gyoumu/Express/A10002.html"}], klook: null, wifeNote: "假日建議提前於近鐵官網或APP訂位。今天住 R&B 第三晚。",
               mapQuery: "伊勢神宮 内宮", coords: {lat: 34.4557, lon: 136.7256}, climateNote: "伊勢地區 8 月平均高溫約 32°C／低溫約 25°C，老街步行多請備遮陽帽。",
               foodSpots: [{name: "托福橫丁 (おかげ横丁)", mapQuery: "おかげ横丁"}, {name: "赤福本店 (赤福冰)", mapQuery: "赤福本店"}],
-              costBreakdown: { transport: 14600, food: 6000, ticket: 0, other: 1500 } },
+              costBreakdown: { transport: 18500, food: 6000, ticket: 0, other: 1500 } },
             { day: 5, date: "8/9 (日)", title: "鈴鹿賽道飆速", emoji: "🏎️", spot: "白子 (E31)", food: "園區餐廳", cost: "門票約: ¥10,800 (全家)", transport: "08:01 或 08:10 近鐵特急至白子站；轉 09:20 公車 03 路。", desc: "體驗自駕執照！白子站西出口第一月台搭車。末班公車 18:30。假日人潮多請早點出門。", links: [{title: "鈴鹿賽道官網", url: "https://www.suzukacircuit.jp/tw/"}], klook: "https://www.klook.com/zh-TW/activity/7154-suzuka-circuit-motopia-ticket-mie-nagoya/", wifeNote: "老婆提示：公車一小時一班，請務必準時。今天住 R&B 最後一晚。",
               mapQuery: "鈴鹿サーキット", coords: {lat: 34.8431, lon: 136.5410}, climateNote: "鈴鹿地區 8 月平均高溫約 33°C／低溫約 25°C，園區內大多戶外，請注意防曬。",
               foodSpots: [{name: "鈴鹿賽道園區餐廳 (モートピア)", mapQuery: "鈴鹿サーキット モートピア レストラン"}],
@@ -273,6 +292,26 @@
             if ([95,96,99].includes(code)) return '⛈️';
             return '🌡️';
         };
+
+        function switchMainTab(target) {
+            document.querySelectorAll('.main-page').forEach(sec => sec.classList.toggle('active-page', sec.id === target));
+            document.querySelectorAll('.main-nav-btn').forEach(btn => btn.classList.toggle('active', btn.dataset.target === target));
+            try { localStorage.setItem('sugiNagoyaLastTab', target); } catch (e) {}
+            window.scrollTo({ top: 0, behavior: 'instant' in window ? 'instant' : 'auto' });
+            // 圖表在隱藏容器內建立時尺寸會是 0，切到該分頁時強制重新計算大小
+            if (target === 'budget' && window.budgetChartInstance) window.budgetChartInstance.resize();
+            if (target === 'expense' && window.dailyChartInstance) window.dailyChartInstance.resize();
+        }
+
+        function initMainNav() {
+            document.querySelectorAll('.main-nav-btn').forEach(btn => {
+                btn.addEventListener('click', () => switchMainTab(btn.dataset.target));
+            });
+            let startTab = 'itinerary';
+            try { startTab = localStorage.getItem('sugiNagoyaLastTab') || 'itinerary'; } catch (e) {}
+            if (!document.getElementById(startTab)) startTab = 'itinerary';
+            switchMainTab(startTab);
+        }
 
         function mapUrl(query) {
             return `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(query)}`;
@@ -344,6 +383,8 @@
         }
 
         window.onload = () => {
+            initMainNav();
+
             const btnContainer = document.getElementById('tab-btns');
             tripData.forEach((d, i) => {
                 const b = document.createElement('button'); b.className = "tab-btn";
@@ -371,7 +412,7 @@
             renderQuickMapLinks();
             renderPackingList();
 
-            new Chart(document.getElementById('budgetChart'), {
+            window.budgetChartInstance = new Chart(document.getElementById('budgetChart'), {
                 type: 'doughnut',
                 data: {
                     labels: ['住宿 (已付)', '門票交通 (估)', '餐飲雜項', '扭蛋基金 (2童)'],
@@ -676,7 +717,19 @@
                 data: { labels: dayLabels, datasets: [{ label: '花費(NT$)', data: dayTotals, backgroundColor: '#c2410c', borderRadius: 6 }] },
                 options: { responsive: true, maintainAspectRatio: false, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true } } }
             });
+            window.dailyChartInstance = dailyChartInstance;
         }
+
+        // 每日花費長條圖藏在 <details> 裡，收合時建立會量不到尺寸，展開時重新計算一次
+        document.addEventListener('DOMContentLoaded', () => {
+            const chartDetails = document.getElementById('dailyExpenseChart');
+            const detailsEl = chartDetails ? chartDetails.closest('details') : null;
+            if (detailsEl) {
+                detailsEl.addEventListener('toggle', () => {
+                    if (detailsEl.open && window.dailyChartInstance) window.dailyChartInstance.resize();
+                });
+            }
+        });
 
         function updateProgressBar(list) {
             const bar = document.getElementById('expProgressBar');
