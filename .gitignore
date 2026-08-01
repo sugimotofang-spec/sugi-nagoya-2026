@@ -6,3 +6,10 @@
 !sw.js
 !icons/
 !icons/*.png
+!*.md
+!lifeos/
+!lifeos/*.html
+!lifeos/*.json
+!lifeos/*.js
+!lifeos/icons/
+!lifeos/icons/*.png

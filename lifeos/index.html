@@ -1,0 +1,823 @@
+<!DOCTYPE html>
+<html lang="zh-TW" class="scroll-smooth">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Sugi LifeOS</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#1d1d1f">
+    <link rel="icon" href="icons/icon-192.png">
+    <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Sugi LifeOS">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <!-- Chosen Palette: Apple 銀灰 (Apple Silver) - Bg: #f5f5f7, Primary: Graphite #1d1d1f, Accent: Apple Blue #0071e3 -->
+    <style>
+        body { font-family: -apple-system, BlinkMacSystemFont, 'SF Pro Text', 'PingFang TC', 'Noto Sans TC', sans-serif; -webkit-tap-highlight-color: transparent; background: #f5f5f7; color: #1d1d1f; }
+        .tab-btn.active { background-color: #0071e3; color: white; border-color: #0071e3; }
+        .tab-btn:hover:not(.active) { background-color: #f5f5f7; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .main-page { display: none; }
+        .main-page.active-page { display: block; }
+        .main-nav-btn.active { color: #0071e3; }
+        .main-nav-btn.active .nav-underline { background-color: #0071e3; }
+        details > summary { list-style: none; }
+        details > summary::-webkit-details-marker { display: none; }
+        .card { background: white; border: 1px solid #d2d2d7; border-radius: 1.25rem; }
+        .pill-btn { background: #0071e3; color: white; font-weight: 700; border-radius: 999px; padding: 0.55rem 1.1rem; font-size: 0.8rem; transition: opacity .15s ease; }
+        .pill-btn:hover { opacity: 0.85; }
+        .pill-btn-ghost { background: #f5f5f7; color: #1d1d1f; font-weight: 600; border: 1px solid #d2d2d7; border-radius: 999px; padding: 0.5rem 1rem; font-size: 0.75rem; }
+        .field { border: 1px solid #d2d2d7; border-radius: 0.75rem; padding: 0.55rem 0.8rem; font-size: 0.85rem; width: 100%; background: white; }
+        .field:focus { outline: none; border-color: #0071e3; }
+        .chip { display: inline-flex; align-items: center; gap: 0.25rem; background: #f5f5f7; border: 1px solid #d2d2d7; border-radius: 999px; padding: 0.2rem 0.6rem; font-size: 0.7rem; font-weight: 600; color: #6e6e73; }
+        .progress-track { background: #e8e8ed; border-radius: 999px; height: 0.5rem; overflow: hidden; }
+        .progress-fill { background: #0071e3; height: 100%; border-radius: 999px; transition: width .3s ease; }
+        .heat-cell { width: 100%; aspect-ratio: 1; border-radius: 0.3rem; background: #e8e8ed; }
+        .heat-cell.on { background: #0071e3; }
+        .task-row.done .task-title { text-decoration: line-through; color: #a1a1a6; }
+        .filter-btn.active { background: #1d1d1f; color: white; }
+    </style>
+</head>
+<body class="bg-[#f5f5f7] text-[#1d1d1f] pb-24">
+
+    <nav class="sticky top-0 z-50 bg-white/80 backdrop-blur-xl border-b border-[#d2d2d7]">
+        <div class="max-w-4xl mx-auto px-4 h-14 flex items-center justify-between">
+            <span class="font-semibold text-[#1d1d1f] text-base tracking-tight">SUGI LIFEOS</span>
+            <div class="flex gap-4 font-medium text-[11px] text-[#6e6e73] overflow-x-auto no-scrollbar" id="mainNavBtns">
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1 shrink-0" data-target="today">今日<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1 shrink-0" data-target="goals">目標<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1 shrink-0" data-target="tasks">任務<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1 shrink-0" data-target="habits">習慣<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1 shrink-0" data-target="money">家計<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+                <button type="button" class="main-nav-btn flex flex-col items-center gap-1 shrink-0" data-target="more">更多<span class="nav-underline w-4 h-0.5 rounded-full"></span></button>
+            </div>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto px-4 py-8 space-y-6">
+
+        <!-- ================= 今日 ================= -->
+        <section id="today" class="main-page space-y-5">
+            <div>
+                <p class="text-[11px] text-[#6e6e73] font-semibold" id="todayDateLabel"></p>
+                <h1 class="text-3xl font-semibold tracking-tight" id="todayGreeting">你好，Sugi</h1>
+            </div>
+
+            <div class="card p-5">
+                <div class="flex items-center justify-between mb-3">
+                    <h2 class="font-semibold text-sm">📌 今日待辦</h2>
+                    <button type="button" class="pill-btn-ghost" data-nav="tasks">查看全部</button>
+                </div>
+                <div id="todayTaskList" class="space-y-2"></div>
+                <p id="todayTaskEmpty" class="text-xs text-[#a1a1a6] hidden">今天沒有安排任務，輕鬆一下 ☕️</p>
+            </div>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">🔄 今日習慣</h2>
+                <div id="todayHabitList" class="flex flex-wrap gap-2"></div>
+                <p id="todayHabitEmpty" class="text-xs text-[#a1a1a6] hidden">還沒有建立習慣，去「習慣」頁新增一個吧</p>
+            </div>
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div class="card p-5">
+                    <h2 class="font-semibold text-sm mb-3">⏳ 倒數日</h2>
+                    <div id="todayDatesList" class="space-y-2"></div>
+                    <p id="todayDatesEmpty" class="text-xs text-[#a1a1a6] hidden">尚未新增任何倒數日</p>
+                </div>
+                <div class="card p-5">
+                    <h2 class="font-semibold text-sm mb-3">💰 本月預算</h2>
+                    <p id="todayBudgetLine" class="text-sm text-[#1d1d1f]">尚未設定本月預算</p>
+                    <div class="progress-track mt-3">
+                        <div class="progress-fill" id="todayBudgetBar" style="width:0%"></div>
+                    </div>
+                </div>
+            </div>
+        </section>
+
+        <!-- ================= 目標 ================= -->
+        <section id="goals" class="main-page space-y-5">
+            <h1 class="text-2xl font-semibold tracking-tight">🎯 人生目標</h1>
+            <p class="text-xs text-[#6e6e73]">每個象限建議聚焦最多 3 個年度目標</p>
+
+            <div id="goalAreas" class="space-y-6"></div>
+
+            <details class="card p-5">
+                <summary class="cursor-pointer font-semibold text-sm flex items-center justify-between">
+                    <span>➕ 新增目標</span><span class="text-[#a1a1a6] text-xs">▾</span>
+                </summary>
+                <form id="goalForm" class="mt-4 space-y-3">
+                    <input type="text" id="goalTitle" class="field" placeholder="目標名稱，例如：升遷成為主管" required>
+                    <div class="grid grid-cols-2 gap-3">
+                        <select id="goalArea" class="field">
+                            <option value="work">💼 工作</option>
+                            <option value="family">👨‍👩‍👧 家庭</option>
+                            <option value="health">💪 健康</option>
+                            <option value="money">💰 財務</option>
+                        </select>
+                        <input type="number" id="goalYear" class="field" placeholder="年度" value="2026">
+                    </div>
+                    <button type="submit" class="pill-btn w-full">新增目標</button>
+                </form>
+            </details>
+        </section>
+
+        <!-- ================= 任務 ================= -->
+        <section id="tasks" class="main-page space-y-5">
+            <h1 class="text-2xl font-semibold tracking-tight">✅ 任務</h1>
+
+            <form id="taskForm" class="card p-4 space-y-2">
+                <input type="text" id="taskTitle" class="field" placeholder="新增任務，例如：回覆客戶信件" required>
+                <div class="grid grid-cols-3 gap-2">
+                    <input type="text" id="taskTag" class="field" placeholder="標籤（工作/家庭/雜事）">
+                    <input type="date" id="taskDue" class="field">
+                    <button type="submit" class="pill-btn">新增</button>
+                </div>
+            </form>
+
+            <div class="flex gap-2 overflow-x-auto no-scrollbar" id="taskFilters">
+                <button type="button" class="filter-btn active pill-btn-ghost" data-filter="inbox">收件匣</button>
+                <button type="button" class="filter-btn pill-btn-ghost" data-filter="today">今天</button>
+                <button type="button" class="filter-btn pill-btn-ghost" data-filter="waiting">等待中</button>
+                <button type="button" class="filter-btn pill-btn-ghost" data-filter="done">已完成</button>
+                <button type="button" class="filter-btn pill-btn-ghost" data-filter="all">全部</button>
+            </div>
+
+            <div id="taskList" class="space-y-2"></div>
+            <p id="taskEmpty" class="text-xs text-[#a1a1a6] hidden text-center py-6">這裡空空的</p>
+        </section>
+
+        <!-- ================= 習慣 ================= -->
+        <section id="habits" class="main-page space-y-5">
+            <h1 class="text-2xl font-semibold tracking-tight">🔄 習慣追蹤</h1>
+
+            <form id="habitForm" class="card p-4 flex gap-2">
+                <input type="text" id="habitTitle" class="field" placeholder="新增習慣，例如：運動 30 分鐘" required>
+                <button type="submit" class="pill-btn shrink-0">新增</button>
+            </form>
+
+            <div id="habitList" class="space-y-4"></div>
+            <p id="habitEmpty" class="text-xs text-[#a1a1a6] hidden text-center py-6">還沒有習慣，新增一個開始追蹤吧</p>
+        </section>
+
+        <!-- ================= 家計 ================= -->
+        <section id="money" class="main-page space-y-5">
+            <h1 class="text-2xl font-semibold tracking-tight">💰 家計管理</h1>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">本月預算設定</h2>
+                <div class="flex gap-2">
+                    <input type="number" id="budgetInput" class="field" placeholder="輸入本月預算金額（TWD）">
+                    <button type="button" id="budgetSaveBtn" class="pill-btn shrink-0">儲存</button>
+                </div>
+                <p class="text-xs text-[#6e6e73] mt-2" id="budgetMonthLabel"></p>
+            </div>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">快速記一筆</h2>
+                <form id="expenseForm" class="space-y-2">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="number" id="expenseAmount" class="field" placeholder="金額" required>
+                        <select id="expenseCategory" class="field">
+                            <option value="餐飲">🍜 餐飲</option>
+                            <option value="交通">🚃 交通</option>
+                            <option value="小孩">🧸 小孩</option>
+                            <option value="家用">🏠 家用</option>
+                            <option value="娛樂">🎮 娛樂</option>
+                            <option value="旅遊基金">✈️ 旅遊基金</option>
+                            <option value="其他">📦 其他</option>
+                        </select>
+                    </div>
+                    <div class="grid grid-cols-3 gap-2">
+                        <input type="text" id="expenseNote" class="field col-span-2" placeholder="備註（選填）">
+                        <input type="date" id="expenseDate" class="field">
+                    </div>
+                    <button type="submit" class="pill-btn w-full">記一筆</button>
+                </form>
+            </div>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">本月分類佔比</h2>
+                <div class="relative w-full max-w-[280px] mx-auto" style="height:220px">
+                    <canvas id="expenseChart"></canvas>
+                </div>
+                <p id="expenseChartEmpty" class="text-xs text-[#a1a1a6] text-center hidden">本月尚未記帳</p>
+            </div>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">最近記錄</h2>
+                <div id="expenseList" class="space-y-2"></div>
+                <p id="expenseEmpty" class="text-xs text-[#a1a1a6] hidden">尚無記錄</p>
+            </div>
+
+            <details class="card p-5">
+                <summary class="cursor-pointer font-semibold text-sm flex items-center justify-between">
+                    <span>💱 匯率速算機</span><span class="text-[#a1a1a6] text-xs">▾</span>
+                </summary>
+                <div class="mt-4 grid grid-cols-2 gap-3 items-center">
+                    <div>
+                        <label class="text-[10px] text-[#6e6e73]">日幣 JPY</label>
+                        <input type="number" id="fxJpy" class="field" placeholder="輸入日幣金額">
+                    </div>
+                    <div>
+                        <label class="text-[10px] text-[#6e6e73]">台幣 TWD（約）</label>
+                        <input type="number" id="fxTwd" class="field" readonly>
+                    </div>
+                </div>
+                <div class="flex items-center gap-2 mt-3">
+                    <span class="text-[10px] text-[#6e6e73]">匯率 1 JPY =</span>
+                    <input type="number" id="fxRate" class="field" style="max-width:100px" value="0.21" step="0.001">
+                    <span class="text-[10px] text-[#6e6e73]">TWD</span>
+                </div>
+            </details>
+        </section>
+
+        <!-- ================= 更多 ================= -->
+        <section id="more" class="main-page space-y-5">
+            <h1 class="text-2xl font-semibold tracking-tight">⚙️ 更多</h1>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">⏳ 倒數日 / 紀念日</h2>
+                <form id="dateForm" class="space-y-2 mb-4">
+                    <input type="text" id="dateTitle" class="field" placeholder="事件名稱，例如：名古屋家族旅行">
+                    <div class="grid grid-cols-2 gap-2">
+                        <input type="date" id="dateValue" class="field">
+                        <select id="dateRepeat" class="field">
+                            <option value="none">單次事件</option>
+                            <option value="yearly">每年重複（紀念日）</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="pill-btn w-full">新增</button>
+                </form>
+                <div id="dateList" class="space-y-2"></div>
+            </div>
+
+            <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">📦 資料備份</h2>
+                <p class="text-xs text-[#6e6e73] mb-3">所有資料只存在這台裝置的瀏覽器裡，建議每月匯出一次備份到雲端硬碟。</p>
+                <div class="flex gap-2">
+                    <button type="button" id="exportBtn" class="pill-btn flex-1">匯出 JSON</button>
+                    <label class="pill-btn-ghost flex-1 text-center cursor-pointer">
+                        匯入 JSON
+                        <input type="file" id="importInput" accept="application/json" class="hidden">
+                    </label>
+                </div>
+                <button type="button" id="clearBtn" class="text-[11px] text-red-500 mt-3 underline">清空所有資料</button>
+            </div>
+
+            <div class="card p-5 text-xs text-[#6e6e73] leading-relaxed">
+                <p class="font-semibold text-[#1d1d1f] mb-1">關於 Sugi LifeOS</p>
+                <p>個人人生管理儀表板 · 資料全部儲存在本機瀏覽器 · 可加到主畫面離線使用。</p>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+    /* ===================== State ===================== */
+    const STORAGE_KEY = 'sugiLifeOS';
+    const AREA_LABELS = { work: '💼 工作', family: '👨‍👩‍👧 家庭', health: '💪 健康', money: '💰 財務' };
+
+    function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
+    function todayStr() { return new Date().toISOString().slice(0, 10); }
+    function monthStr(d) { return (d || todayStr()).slice(0, 7); }
+
+    function defaultState() {
+        return { version: 1, goals: [], tasks: [], habits: [], expenses: [], budgets: {}, dates: [] };
+    }
+
+    function loadState() {
+        try {
+            const raw = localStorage.getItem(STORAGE_KEY);
+            if (!raw) return defaultState();
+            const parsed = JSON.parse(raw);
+            return Object.assign(defaultState(), parsed);
+        } catch (e) {
+            console.error('Failed to load state', e);
+            return defaultState();
+        }
+    }
+
+    let state = loadState();
+    function save() { localStorage.setItem(STORAGE_KEY, JSON.stringify(state)); }
+
+    /* ===================== Navigation ===================== */
+    const navBtns = document.querySelectorAll('.main-nav-btn');
+    const pages = document.querySelectorAll('.main-page');
+
+    function showPage(target) {
+        pages.forEach(p => p.classList.toggle('active-page', p.id === target));
+        navBtns.forEach(b => b.classList.toggle('active', b.dataset.target === target));
+        renderAll();
+    }
+    navBtns.forEach(b => b.addEventListener('click', () => showPage(b.dataset.target)));
+    document.querySelectorAll('[data-nav]').forEach(b => b.addEventListener('click', () => showPage(b.dataset.nav)));
+
+    /* ===================== Render: Today ===================== */
+    function renderToday() {
+        const now = new Date();
+        const weekday = ['日', '一', '二', '三', '四', '五', '六'][now.getDay()];
+        document.getElementById('todayDateLabel').textContent =
+            `${now.getFullYear()}年${now.getMonth() + 1}月${now.getDate()}日 星期${weekday}`;
+
+        const hour = now.getHours();
+        const greet = hour < 5 ? '夜深了' : hour < 11 ? '早安' : hour < 18 ? '午安' : '晚安';
+        document.getElementById('todayGreeting').textContent = `${greet}，Sugi`;
+
+        // Today's tasks
+        const t = todayStr();
+        const todayTasks = state.tasks.filter(x => x.status !== 'done' && (x.due === t || x.status === 'today'));
+        const listEl = document.getElementById('todayTaskList');
+        listEl.innerHTML = '';
+        todayTasks.slice(0, 6).forEach(task => listEl.appendChild(taskRowEl(task)));
+        document.getElementById('todayTaskEmpty').classList.toggle('hidden', todayTasks.length > 0);
+
+        // Today's habits
+        const hList = document.getElementById('todayHabitList');
+        hList.innerHTML = '';
+        state.habits.forEach(h => {
+            const on = !!h.log[t];
+            const btn = document.createElement('button');
+            btn.type = 'button';
+            btn.className = `chip ${on ? 'bg-[#0071e3] text-white border-[#0071e3]' : ''}`;
+            btn.textContent = (on ? '✓ ' : '') + h.title;
+            btn.addEventListener('click', () => { toggleHabit(h.id, t); renderAll(); });
+            hList.appendChild(btn);
+        });
+        document.getElementById('todayHabitEmpty').classList.toggle('hidden', state.habits.length > 0);
+
+        // Countdown
+        const datesEl = document.getElementById('todayDatesList');
+        datesEl.innerHTML = '';
+        const upcoming = upcomingDates().slice(0, 3);
+        upcoming.forEach(d => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between text-sm';
+            row.innerHTML = `<span>${d.title}</span><span class="chip">${d.daysLeft === 0 ? '就是今天！' : d.daysLeft + ' 天'}</span>`;
+            datesEl.appendChild(row);
+        });
+        document.getElementById('todayDatesEmpty').classList.toggle('hidden', upcoming.length > 0);
+
+        // Budget
+        const m = monthStr();
+        const budget = state.budgets[m];
+        const spent = state.expenses.filter(e => monthStr(e.date) === m).reduce((s, e) => s + Number(e.amount), 0);
+        const budgetLine = document.getElementById('todayBudgetLine');
+        const budgetBar = document.getElementById('todayBudgetBar');
+        if (budget && budget.total) {
+            const remain = budget.total - spent;
+            budgetLine.textContent = `本月還剩 NT$${remain.toLocaleString()}（已花 NT$${spent.toLocaleString()} / NT$${budget.total.toLocaleString()}）`;
+            budgetBar.style.width = Math.min(100, (spent / budget.total) * 100) + '%';
+        } else {
+            budgetLine.textContent = `本月已花 NT$${spent.toLocaleString()}（尚未設定預算）`;
+            budgetBar.style.width = '0%';
+        }
+    }
+
+    function upcomingDates() {
+        const now = new Date(todayStr());
+        return state.dates.map(d => {
+            let target = new Date(d.date);
+            if (d.repeat === 'yearly') {
+                target = new Date(now.getFullYear(), target.getMonth(), target.getDate());
+                if (target < now) target = new Date(now.getFullYear() + 1, target.getMonth(), target.getDate());
+            }
+            const daysLeft = Math.ceil((target - now) / 86400000);
+            return { ...d, daysLeft };
+        }).filter(d => d.daysLeft >= 0).sort((a, b) => a.daysLeft - b.daysLeft);
+    }
+
+    /* ===================== Goals ===================== */
+    function renderGoals() {
+        const container = document.getElementById('goalAreas');
+        container.innerHTML = '';
+        Object.keys(AREA_LABELS).forEach(area => {
+            const goals = state.goals.filter(g => g.area === area);
+            const wrap = document.createElement('div');
+            wrap.className = 'space-y-3';
+            wrap.innerHTML = `<h3 class="text-sm font-semibold text-[#6e6e73]">${AREA_LABELS[area]}</h3>`;
+            if (goals.length === 0) {
+                wrap.innerHTML += `<p class="text-xs text-[#a1a1a6]">尚未設定目標</p>`;
+            }
+            goals.forEach(g => {
+                const card = document.createElement('div');
+                card.className = 'card p-4';
+                const avgProgress = g.krs.length
+                    ? g.krs.reduce((s, k) => s + Math.min(100, (k.current / (k.target || 1)) * 100), 0) / g.krs.length
+                    : 0;
+                card.innerHTML = `
+                    <div class="flex items-center justify-between mb-2">
+                        <span class="font-semibold text-sm">${escapeHtml(g.title)}</span>
+                        <button data-del-goal="${g.id}" class="text-[#a1a1a6] text-xs">✕</button>
+                    </div>
+                    <div class="progress-track mb-2"><div class="progress-fill" style="width:${avgProgress}%"></div></div>
+                    <div class="space-y-1" data-kr-wrap="${g.id}"></div>
+                    <form data-kr-form="${g.id}" class="flex gap-2 mt-2">
+                        <input type="text" placeholder="關鍵結果，例如：完成 3 場簡報" class="field text-xs" data-kr-title required>
+                        <input type="number" placeholder="目標值" class="field text-xs" style="max-width:80px" data-kr-target value="100">
+                        <button type="submit" class="pill-btn-ghost text-xs shrink-0">加入</button>
+                    </form>
+                `;
+                const krWrap = card.querySelector(`[data-kr-wrap="${g.id}"]`);
+                g.krs.forEach((kr, idx) => {
+                    const pct = Math.min(100, Math.round((kr.current / (kr.target || 1)) * 100));
+                    const krRow = document.createElement('div');
+                    krRow.className = 'flex items-center gap-2 text-xs';
+                    krRow.innerHTML = `
+                        <span class="flex-1">${escapeHtml(kr.title)}</span>
+                        <button class="pill-btn-ghost" data-kr-minus="${g.id}:${idx}">−</button>
+                        <span class="w-10 text-center">${pct}%</span>
+                        <button class="pill-btn-ghost" data-kr-plus="${g.id}:${idx}">+</button>
+                    `;
+                    krWrap.appendChild(krRow);
+                });
+                wrap.appendChild(card);
+            });
+            container.appendChild(wrap);
+        });
+
+        container.querySelectorAll('[data-del-goal]').forEach(b => b.addEventListener('click', () => {
+            state.goals = state.goals.filter(g => g.id !== b.dataset.delGoal);
+            save(); renderGoals();
+        }));
+        container.querySelectorAll('[data-kr-form]').forEach(f => f.addEventListener('submit', (e) => {
+            e.preventDefault();
+            const goalId = f.dataset.krForm;
+            const goal = state.goals.find(g => g.id === goalId);
+            const title = f.querySelector('[data-kr-title]').value.trim();
+            const target = Number(f.querySelector('[data-kr-target]').value) || 100;
+            if (!title) return;
+            goal.krs.push({ title, target, current: 0 });
+            save(); renderGoals();
+        }));
+        container.querySelectorAll('[data-kr-plus], [data-kr-minus]').forEach(b => b.addEventListener('click', () => {
+            const key = b.dataset.krPlus || b.dataset.krMinus;
+            const [goalId, idx] = key.split(':');
+            const goal = state.goals.find(g => g.id === goalId);
+            const kr = goal.krs[Number(idx)];
+            const step = Math.max(1, Math.round((kr.target || 100) / 10));
+            kr.current = Math.max(0, Math.min(kr.target, kr.current + (b.dataset.krPlus ? step : -step)));
+            save(); renderGoals();
+        }));
+    }
+
+    document.getElementById('goalForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('goalTitle').value.trim();
+        const area = document.getElementById('goalArea').value;
+        const year = Number(document.getElementById('goalYear').value) || new Date().getFullYear();
+        if (!title) return;
+        state.goals.push({ id: uid(), title, area, year, krs: [] });
+        save();
+        e.target.reset();
+        document.getElementById('goalYear').value = 2026;
+        renderGoals();
+    });
+
+    /* ===================== Tasks ===================== */
+    let taskFilter = 'inbox';
+    document.querySelectorAll('.filter-btn').forEach(b => b.addEventListener('click', () => {
+        taskFilter = b.dataset.filter;
+        document.querySelectorAll('.filter-btn').forEach(x => x.classList.toggle('active', x === b));
+        renderTasks();
+    }));
+
+    function taskRowEl(task) {
+        const row = document.createElement('div');
+        row.className = `task-row card p-3 flex items-center gap-3 ${task.status === 'done' ? 'done' : ''}`;
+        row.innerHTML = `
+            <input type="checkbox" ${task.status === 'done' ? 'checked' : ''} data-toggle-task="${task.id}" class="w-5 h-5 accent-[#0071e3]">
+            <div class="flex-1 min-w-0">
+                <p class="task-title text-sm font-medium truncate">${escapeHtml(task.title)}</p>
+                <div class="flex gap-1 mt-1 flex-wrap">
+                    ${task.tag ? `<span class="chip">${escapeHtml(task.tag)}</span>` : ''}
+                    ${task.due ? `<span class="chip">📅 ${task.due}</span>` : ''}
+                    ${task.status === 'waiting' ? `<span class="chip">⏸ 等待中</span>` : ''}
+                </div>
+            </div>
+            <button data-waiting-task="${task.id}" class="pill-btn-ghost text-[10px] shrink-0">${task.status === 'waiting' ? '恢復' : '等待'}</button>
+            <button data-del-task="${task.id}" class="text-[#a1a1a6] text-xs shrink-0">✕</button>
+        `;
+        return row;
+    }
+
+    function renderTasks() {
+        const listEl = document.getElementById('taskList');
+        listEl.innerHTML = '';
+        let filtered;
+        if (taskFilter === 'all') filtered = state.tasks;
+        else if (taskFilter === 'today') filtered = state.tasks.filter(t => t.status !== 'done' && (t.due === todayStr() || t.status === 'today'));
+        else if (taskFilter === 'waiting') filtered = state.tasks.filter(t => t.status === 'waiting');
+        else if (taskFilter === 'done') filtered = state.tasks.filter(t => t.status === 'done');
+        else filtered = state.tasks.filter(t => t.status === 'inbox');
+
+        filtered.forEach(t => listEl.appendChild(taskRowEl(t)));
+        document.getElementById('taskEmpty').classList.toggle('hidden', filtered.length > 0);
+
+        listEl.querySelectorAll('[data-toggle-task]').forEach(b => b.addEventListener('change', () => {
+            const t = state.tasks.find(x => x.id === b.dataset.toggleTask);
+            t.status = t.status === 'done' ? 'inbox' : 'done';
+            save(); renderAll();
+        }));
+        listEl.querySelectorAll('[data-waiting-task]').forEach(b => b.addEventListener('click', () => {
+            const t = state.tasks.find(x => x.id === b.dataset.waitingTask);
+            t.status = t.status === 'waiting' ? 'inbox' : 'waiting';
+            save(); renderTasks();
+        }));
+        listEl.querySelectorAll('[data-del-task]').forEach(b => b.addEventListener('click', () => {
+            state.tasks = state.tasks.filter(x => x.id !== b.dataset.delTask);
+            save(); renderAll();
+        }));
+    }
+
+    document.getElementById('taskForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('taskTitle').value.trim();
+        if (!title) return;
+        const tag = document.getElementById('taskTag').value.trim();
+        const due = document.getElementById('taskDue').value;
+        state.tasks.unshift({ id: uid(), title, tag, due, status: 'inbox', goalId: null });
+        save();
+        e.target.reset();
+        renderAll();
+    });
+
+    /* ===================== Habits ===================== */
+    function toggleHabit(id, dateKey) {
+        const h = state.habits.find(x => x.id === id);
+        if (!h) return;
+        h.log[dateKey] = !h.log[dateKey];
+        if (!h.log[dateKey]) delete h.log[dateKey];
+        save();
+    }
+
+    function streakFor(h) {
+        let streak = 0;
+        let d = new Date(todayStr());
+        while (true) {
+            const key = d.toISOString().slice(0, 10);
+            if (h.log[key]) { streak++; d.setDate(d.getDate() - 1); }
+            else break;
+        }
+        return streak;
+    }
+
+    function renderHabits() {
+        const listEl = document.getElementById('habitList');
+        listEl.innerHTML = '';
+        state.habits.forEach(h => {
+            const card = document.createElement('div');
+            card.className = 'card p-4';
+            const streak = streakFor(h);
+            card.innerHTML = `
+                <div class="flex items-center justify-between mb-3">
+                    <span class="font-semibold text-sm">${escapeHtml(h.title)}</span>
+                    <div class="flex items-center gap-2">
+                        <span class="chip">🔥 ${streak} 天</span>
+                        <button data-del-habit="${h.id}" class="text-[#a1a1a6] text-xs">✕</button>
+                    </div>
+                </div>
+                <div class="grid grid-cols-7 gap-1" data-heatmap="${h.id}"></div>
+            `;
+            const heat = card.querySelector('[data-heatmap]');
+            const days = [];
+            for (let i = 34; i >= 0; i--) {
+                const d = new Date();
+                d.setDate(d.getDate() - i);
+                days.push(d.toISOString().slice(0, 10));
+            }
+            days.forEach(dateKey => {
+                const cell = document.createElement('button');
+                cell.type = 'button';
+                cell.title = dateKey;
+                cell.className = `heat-cell ${h.log[dateKey] ? 'on' : ''}`;
+                cell.addEventListener('click', () => { toggleHabit(h.id, dateKey); renderAll(); });
+                heat.appendChild(cell);
+            });
+            listEl.appendChild(card);
+        });
+        document.getElementById('habitEmpty').classList.toggle('hidden', state.habits.length > 0);
+
+        listEl.querySelectorAll('[data-del-habit]').forEach(b => b.addEventListener('click', () => {
+            state.habits = state.habits.filter(h => h.id !== b.dataset.delHabit);
+            save(); renderAll();
+        }));
+    }
+
+    document.getElementById('habitForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('habitTitle').value.trim();
+        if (!title) return;
+        state.habits.push({ id: uid(), title, log: {} });
+        save();
+        e.target.reset();
+        renderAll();
+    });
+
+    /* ===================== Money ===================== */
+    let expenseChart = null;
+
+    function renderExpenseChart(byCategory) {
+        const labels = Object.keys(byCategory);
+        const data = Object.values(byCategory);
+        const chartEl = document.getElementById('expenseChart');
+        const emptyEl = document.getElementById('expenseChartEmpty');
+        emptyEl.classList.toggle('hidden', labels.length > 0);
+        if (expenseChart) { expenseChart.destroy(); expenseChart = null; }
+        if (labels.length === 0) return;
+        if (typeof Chart === 'undefined') {
+            emptyEl.textContent = '圖表元件離線中，暫時無法顯示（資料仍完整保留）';
+            emptyEl.classList.remove('hidden');
+            return;
+        }
+        try {
+            expenseChart = new Chart(chartEl, {
+                type: 'doughnut',
+                data: {
+                    labels,
+                    datasets: [{
+                        data,
+                        backgroundColor: ['#0071e3', '#1d1d1f', '#6e6e73', '#a1a1a6', '#c7cbd1', '#34c759', '#ff9f0a'],
+                        borderWidth: 2,
+                        borderColor: '#ffffff'
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: false,
+                    plugins: { legend: { position: 'bottom', labels: { boxWidth: 10, font: { size: 10 } } } }
+                }
+            });
+        } catch (err) {
+            console.error('Chart render failed', err);
+        }
+    }
+
+    function renderMoney() {
+        const m = monthStr();
+        document.getElementById('budgetMonthLabel').textContent = `目前設定月份：${m}`;
+        document.getElementById('budgetInput').value = (state.budgets[m] && state.budgets[m].total) || '';
+
+        const monthExpenses = state.expenses.filter(e => monthStr(e.date) === m);
+        const byCategory = {};
+        monthExpenses.forEach(e => { byCategory[e.category] = (byCategory[e.category] || 0) + Number(e.amount); });
+        renderExpenseChart(byCategory);
+
+        const listEl = document.getElementById('expenseList');
+        listEl.innerHTML = '';
+        const recent = [...state.expenses].sort((a, b) => b.date.localeCompare(a.date)).slice(0, 10);
+        recent.forEach(e => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between text-sm border-b border-[#f0f0f2] pb-2';
+            row.innerHTML = `
+                <div class="min-w-0">
+                    <p class="font-medium truncate">${escapeHtml(e.category)} ${e.note ? '· ' + escapeHtml(e.note) : ''}</p>
+                    <p class="text-[10px] text-[#a1a1a6]">${e.date}</p>
+                </div>
+                <div class="flex items-center gap-2 shrink-0">
+                    <span class="font-semibold">NT$${Number(e.amount).toLocaleString()}</span>
+                    <button data-del-expense="${e.id}" class="text-[#a1a1a6] text-xs">✕</button>
+                </div>
+            `;
+            listEl.appendChild(row);
+        });
+        document.getElementById('expenseEmpty').classList.toggle('hidden', recent.length > 0);
+        listEl.querySelectorAll('[data-del-expense]').forEach(b => b.addEventListener('click', () => {
+            state.expenses = state.expenses.filter(x => x.id !== b.dataset.delExpense);
+            save(); renderAll();
+        }));
+    }
+
+    document.getElementById('budgetSaveBtn').addEventListener('click', () => {
+        const m = monthStr();
+        const total = Number(document.getElementById('budgetInput').value) || 0;
+        state.budgets[m] = { total, byCategory: {} };
+        save(); renderAll();
+    });
+
+    document.getElementById('expenseForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const amount = Number(document.getElementById('expenseAmount').value);
+        if (!amount) return;
+        const category = document.getElementById('expenseCategory').value;
+        const note = document.getElementById('expenseNote').value.trim();
+        const date = document.getElementById('expenseDate').value || todayStr();
+        state.expenses.push({ id: uid(), date, amount, currency: 'TWD', category, note });
+        save();
+        e.target.reset();
+        document.getElementById('expenseDate').value = '';
+        renderAll();
+    });
+
+    const fxJpy = document.getElementById('fxJpy');
+    const fxTwd = document.getElementById('fxTwd');
+    const fxRate = document.getElementById('fxRate');
+    function updateFx() {
+        const jpy = Number(fxJpy.value) || 0;
+        const rate = Number(fxRate.value) || 0;
+        fxTwd.value = (jpy * rate).toFixed(1);
+    }
+    fxJpy.addEventListener('input', updateFx);
+    fxRate.addEventListener('input', updateFx);
+
+    /* ===================== Dates ===================== */
+    function renderDates() {
+        const listEl = document.getElementById('dateList');
+        listEl.innerHTML = '';
+        upcomingDates().forEach(d => {
+            const row = document.createElement('div');
+            row.className = 'flex items-center justify-between text-sm border-b border-[#f0f0f2] pb-2';
+            row.innerHTML = `
+                <div>
+                    <p class="font-medium">${escapeHtml(d.title)}</p>
+                    <p class="text-[10px] text-[#a1a1a6]">${d.date}${d.repeat === 'yearly' ? ' · 每年重複' : ''}</p>
+                </div>
+                <div class="flex items-center gap-2">
+                    <span class="chip">${d.daysLeft === 0 ? '今天' : d.daysLeft + ' 天'}</span>
+                    <button data-del-date="${d.id}" class="text-[#a1a1a6] text-xs">✕</button>
+                </div>
+            `;
+            listEl.appendChild(row);
+        });
+        listEl.querySelectorAll('[data-del-date]').forEach(b => b.addEventListener('click', () => {
+            state.dates = state.dates.filter(x => x.id !== b.dataset.delDate);
+            save(); renderAll();
+        }));
+    }
+
+    document.getElementById('dateForm').addEventListener('submit', (e) => {
+        e.preventDefault();
+        const title = document.getElementById('dateTitle').value.trim();
+        const date = document.getElementById('dateValue').value;
+        const repeat = document.getElementById('dateRepeat').value;
+        if (!title || !date) return;
+        state.dates.push({ id: uid(), title, date, repeat });
+        save();
+        e.target.reset();
+        renderAll();
+    });
+
+    /* ===================== Backup ===================== */
+    document.getElementById('exportBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(state, null, 2)], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `sugi-lifeos-${todayStr()}.json`;
+        a.click();
+        URL.revokeObjectURL(url);
+    });
+
+    document.getElementById('importInput').addEventListener('change', (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = () => {
+            try {
+                const imported = JSON.parse(reader.result);
+                if (!confirm('匯入將覆蓋目前所有資料，確定要繼續嗎？')) return;
+                state = Object.assign(defaultState(), imported);
+                save();
+                renderAll();
+                alert('匯入完成！');
+            } catch (err) {
+                alert('檔案格式不正確，匯入失敗。');
+            }
+        };
+        reader.readAsText(file);
+        e.target.value = '';
+    });
+
+    document.getElementById('clearBtn').addEventListener('click', () => {
+        if (!confirm('這會清空所有資料且無法復原，確定嗎？建議先匯出備份。')) return;
+        state = defaultState();
+        save();
+        renderAll();
+    });
+
+    /* ===================== Utils ===================== */
+    function escapeHtml(str) {
+        return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+    }
+
+    function renderAll() {
+        [renderToday, renderGoals, renderTasks, renderHabits, renderMoney, renderDates].forEach(fn => {
+            try { fn(); } catch (err) { console.error(`${fn.name} failed`, err); }
+        });
+    }
+
+    document.getElementById('expenseDate').value = todayStr();
+    renderAll();
+    showPage('today');
+
+    if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+            navigator.serviceWorker.register('sw.js').catch(() => {});
+        });
+    }
+    </script>
+</body>
+</html>
