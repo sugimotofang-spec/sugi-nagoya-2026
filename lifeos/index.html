@@ -134,8 +134,11 @@
                 <div class="grid grid-cols-3 gap-2">
                     <input type="text" id="taskTag" class="field" placeholder="標籤（工作/家庭/雜事）">
                     <input type="date" id="taskDue" class="field">
-                    <button type="submit" class="pill-btn">新增</button>
+                    <select id="taskGoal" class="field">
+                        <option value="">不連結目標</option>
+                    </select>
                 </div>
+                <button type="submit" class="pill-btn w-full">新增任務</button>
             </form>
 
             <div class="flex gap-2 overflow-x-auto no-scrollbar" id="taskFilters">
@@ -240,6 +243,25 @@
             <h1 class="text-2xl font-semibold tracking-tight">⚙️ 更多</h1>
 
             <div class="card p-5">
+                <h2 class="font-semibold text-sm mb-3">📊 本週回顧</h2>
+                <p class="text-[10px] text-[#6e6e73] mb-3" id="weeklyRangeLabel"></p>
+                <div class="grid grid-cols-3 gap-2 text-center">
+                    <div>
+                        <p class="text-2xl font-semibold" id="weeklyTasksDone">0</p>
+                        <p class="text-[10px] text-[#6e6e73]">完成任務</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-semibold" id="weeklyHabitRate">0%</p>
+                        <p class="text-[10px] text-[#6e6e73]">習慣達成率</p>
+                    </div>
+                    <div>
+                        <p class="text-2xl font-semibold" id="weeklySpent">$0</p>
+                        <p class="text-[10px] text-[#6e6e73]">本週花費</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="card p-5">
                 <h2 class="font-semibold text-sm mb-3">⏳ 倒數日 / 紀念日</h2>
                 <form id="dateForm" class="space-y-2 mb-4">
                     <input type="text" id="dateTitle" class="field" placeholder="事件名稱，例如：名古屋家族旅行">
@@ -284,6 +306,16 @@
     function uid() { return Date.now().toString(36) + Math.random().toString(36).slice(2, 7); }
     function todayStr() { return new Date().toISOString().slice(0, 10); }
     function monthStr(d) { return (d || todayStr()).slice(0, 7); }
+
+    function weekRange() {
+        const now = new Date(todayStr());
+        const dow = (now.getDay() + 6) % 7; // Monday = 0
+        const start = new Date(now);
+        start.setDate(now.getDate() - dow);
+        const end = new Date(start);
+        end.setDate(start.getDate() + 6);
+        return { start: start.toISOString().slice(0, 10), end: end.toISOString().slice(0, 10) };
+    }
 
     function defaultState() {
         return { version: 1, goals: [], tasks: [], habits: [], expenses: [], budgets: {}, dates: [] };
@@ -408,6 +440,8 @@
                 const avgProgress = g.krs.length
                     ? g.krs.reduce((s, k) => s + Math.min(100, (k.current / (k.target || 1)) * 100), 0) / g.krs.length
                     : 0;
+                const linkedTasks = state.tasks.filter(t => t.goalId === g.id);
+                const doneTasks = linkedTasks.filter(t => t.status === 'done');
                 card.innerHTML = `
                     <div class="flex items-center justify-between mb-2">
                         <span class="font-semibold text-sm">${escapeHtml(g.title)}</span>
@@ -420,6 +454,7 @@
                         <input type="number" placeholder="目標值" class="field text-xs" style="max-width:80px" data-kr-target value="100">
                         <button type="submit" class="pill-btn-ghost text-xs shrink-0">加入</button>
                     </form>
+                    ${linkedTasks.length > 0 ? `<p class="text-[10px] text-[#6e6e73] mt-2">✅ 連結任務 ${doneTasks.length}/${linkedTasks.length} 已完成</p>` : ''}
                 `;
                 const krWrap = card.querySelector(`[data-kr-wrap="${g.id}"]`);
                 g.krs.forEach((kr, idx) => {
@@ -488,6 +523,7 @@
     function taskRowEl(task) {
         const row = document.createElement('div');
         row.className = `task-row card p-3 flex items-center gap-3 ${task.status === 'done' ? 'done' : ''}`;
+        const goal = task.goalId ? state.goals.find(g => g.id === task.goalId) : null;
         row.innerHTML = `
             <input type="checkbox" ${task.status === 'done' ? 'checked' : ''} data-toggle-task="${task.id}" class="w-5 h-5 accent-[#0071e3]">
             <div class="flex-1 min-w-0">
@@ -496,6 +532,7 @@
                     ${task.tag ? `<span class="chip">${escapeHtml(task.tag)}</span>` : ''}
                     ${task.due ? `<span class="chip">📅 ${task.due}</span>` : ''}
                     ${task.status === 'waiting' ? `<span class="chip">⏸ 等待中</span>` : ''}
+                    ${goal ? `<span class="chip">🎯 ${escapeHtml(goal.title)}</span>` : ''}
                 </div>
             </div>
             <button data-waiting-task="${task.id}" class="pill-btn-ghost text-[10px] shrink-0">${task.status === 'waiting' ? '恢復' : '等待'}</button>
@@ -504,7 +541,16 @@
         return row;
     }
 
+    function populateTaskGoalSelect() {
+        const select = document.getElementById('taskGoal');
+        const current = select.value;
+        select.innerHTML = '<option value="">不連結目標</option>' +
+            state.goals.map(g => `<option value="${g.id}">${AREA_LABELS[g.area]} ${escapeHtml(g.title)}</option>`).join('');
+        if (state.goals.some(g => g.id === current)) select.value = current;
+    }
+
     function renderTasks() {
+        populateTaskGoalSelect();
         const listEl = document.getElementById('taskList');
         listEl.innerHTML = '';
         let filtered;
@@ -519,7 +565,13 @@
 
         listEl.querySelectorAll('[data-toggle-task]').forEach(b => b.addEventListener('change', () => {
             const t = state.tasks.find(x => x.id === b.dataset.toggleTask);
-            t.status = t.status === 'done' ? 'inbox' : 'done';
+            if (t.status === 'done') {
+                t.status = 'inbox';
+                delete t.completedAt;
+            } else {
+                t.status = 'done';
+                t.completedAt = todayStr();
+            }
             save(); renderAll();
         }));
         listEl.querySelectorAll('[data-waiting-task]').forEach(b => b.addEventListener('click', () => {
@@ -539,7 +591,8 @@
         if (!title) return;
         const tag = document.getElementById('taskTag').value.trim();
         const due = document.getElementById('taskDue').value;
-        state.tasks.unshift({ id: uid(), title, tag, due, status: 'inbox', goalId: null });
+        const goalId = document.getElementById('taskGoal').value || null;
+        state.tasks.unshift({ id: uid(), title, tag, due, status: 'inbox', goalId });
         save();
         e.target.reset();
         renderAll();
@@ -798,13 +851,39 @@
         renderAll();
     });
 
+    /* ===================== Weekly Review ===================== */
+    function renderWeeklyReview() {
+        const { start, end } = weekRange();
+        const [sy, sm, sd] = start.split('-');
+        const [ey, em, ed] = end.split('-');
+        document.getElementById('weeklyRangeLabel').textContent = `${sm}/${sd} — ${em}/${ed}`;
+
+        const tasksDone = state.tasks.filter(t => t.completedAt && t.completedAt >= start && t.completedAt <= end).length;
+        document.getElementById('weeklyTasksDone').textContent = tasksDone;
+
+        let habitRate = 0;
+        if (state.habits.length > 0) {
+            const days = [];
+            for (let d = new Date(start); d.toISOString().slice(0, 10) <= end && d.toISOString().slice(0, 10) <= todayStr(); d.setDate(d.getDate() + 1)) {
+                days.push(d.toISOString().slice(0, 10));
+            }
+            const possible = state.habits.length * Math.max(1, days.length);
+            const actual = state.habits.reduce((sum, h) => sum + days.filter(day => h.log[day]).length, 0);
+            habitRate = Math.round((actual / possible) * 100);
+        }
+        document.getElementById('weeklyHabitRate').textContent = `${habitRate}%`;
+
+        const spent = state.expenses.filter(e => e.date >= start && e.date <= end).reduce((s, e) => s + Number(e.amount), 0);
+        document.getElementById('weeklySpent').textContent = `NT$${spent.toLocaleString()}`;
+    }
+
     /* ===================== Utils ===================== */
     function escapeHtml(str) {
         return String(str).replace(/[&<>"']/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
     }
 
     function renderAll() {
-        [renderToday, renderGoals, renderTasks, renderHabits, renderMoney, renderDates].forEach(fn => {
+        [renderToday, renderGoals, renderTasks, renderHabits, renderMoney, renderDates, renderWeeklyReview].forEach(fn => {
             try { fn(); } catch (err) { console.error(`${fn.name} failed`, err); }
         });
     }
