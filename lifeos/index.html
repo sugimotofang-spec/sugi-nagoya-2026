@@ -67,6 +67,38 @@
                 <h1 class="text-3xl font-semibold tracking-tight" id="todayGreeting">你好，Sugi</h1>
             </div>
 
+            <div class="card p-5" id="fortuneCard">
+                <div class="flex items-center justify-between mb-1">
+                    <h2 class="font-semibold text-sm">🔮 今日運勢分析</h2>
+                    <span class="chip" id="fortuneTierChip">—</span>
+                </div>
+                <p class="text-[10px] text-[#a1a1a6] mb-4">結合 LifeOS 實際數據推算 · 每日 00:00 更新</p>
+
+                <div class="flex items-end gap-3">
+                    <span class="text-4xl font-semibold tracking-tight" id="fortuneScore">--</span>
+                    <span class="text-sm mb-1.5" id="fortuneStars"></span>
+                </div>
+                <p class="text-sm font-semibold mt-1 mb-4" id="fortuneHeadline"></p>
+
+                <div class="space-y-2.5 mb-4" id="fortuneBars"></div>
+
+                <div class="grid grid-cols-2 sm:grid-cols-4 gap-2 mb-4" id="fortuneLucky"></div>
+
+                <div class="grid grid-cols-1 sm:grid-cols-2 gap-2 mb-4">
+                    <div class="rounded-xl border border-[#d2d2d7] p-3">
+                        <p class="text-[10px] font-semibold text-[#6e6e73] mb-1">今日宜</p>
+                        <p class="text-xs leading-relaxed" id="fortuneDo"></p>
+                    </div>
+                    <div class="rounded-xl border border-[#d2d2d7] p-3">
+                        <p class="text-[10px] font-semibold text-[#6e6e73] mb-1">今日忌</p>
+                        <p class="text-xs leading-relaxed" id="fortuneAvoid"></p>
+                    </div>
+                </div>
+
+                <p class="text-[10px] font-semibold text-[#6e6e73] mb-2">📊 數據解讀</p>
+                <ul class="space-y-1.5" id="fortuneInsights"></ul>
+            </div>
+
             <div class="card p-5">
                 <div class="flex items-center justify-between mb-3">
                     <h2 class="font-semibold text-sm">📌 今日待辦</h2>
@@ -420,6 +452,227 @@
             const daysLeft = Math.ceil((target - now) / 86400000);
             return { ...d, daysLeft };
         }).filter(d => d.daysLeft >= 0).sort((a, b) => a.daysLeft - b.daysLeft);
+    }
+
+    /* ===================== Daily Fortune ===================== */
+    const FORTUNE_COLORS = [
+        { name: '海軍藍', hex: '#1f3a5f' }, { name: '銀灰', hex: '#a7adb5' },
+        { name: '墨綠', hex: '#2f5d50' }, { name: '燕麥米', hex: '#d9cdb8' },
+        { name: '磚橘', hex: '#c2643a' }, { name: '正白', hex: '#f2f2f4' },
+        { name: '深棕', hex: '#5a4433' }, { name: '天空藍', hex: '#5fa8d3' },
+        { name: '酒紅', hex: '#7b2d3b' }
+    ];
+    const FORTUNE_DIRECTIONS = ['正東', '東南', '正南', '西南', '正西', '西北', '正北', '東北'];
+    const FORTUNE_HOURS = ['07:00–09:00', '09:00–11:00', '11:00–13:00', '13:00–15:00', '15:00–17:00', '17:00–19:00', '19:00–21:00'];
+    const FORTUNE_DO = [
+        '主動開口談一件拖很久的事', '整理桌面與待辦清單', '把大任務切成三個小步驟',
+        '出門走 20 分鐘曬太陽', '記下今天每一筆花費', '聯絡一位很久沒聊的朋友',
+        '提早 30 分鐘收工休息', '做一件對明天有幫助的準備', '重新確認行程與訂位',
+        '先做最不想做的那件事', '簡化一個流程或取消一項訂閱', '為家人準備一個小驚喜'
+    ];
+    const FORTUNE_AVOID = [
+        '衝動下單大額消費', '在情緒上頭時回訊息', '同時開太多待辦',
+        '熬夜追進度', '答應超出負荷的請求', '和人爭辯無關輸贏的小事',
+        '空腹開重要會議', '臨時更改已排好的行程', '把決策拖到深夜再做',
+        '忽略身體發出的疲勞訊號', '重複檢查已完成的工作', '拿自己的進度和別人比較'
+    ];
+    const FORTUNE_TIERS = [
+        { min: 85, label: '大吉', color: '#0071e3', lines: ['氣勢在你這邊，該推的事今天推。', '節奏對了，重要的事放在上午一次解決。', '今天適合當發動者，不是等待者。'] },
+        { min: 75, label: '中吉', color: '#2f855a', lines: ['穩定向上，把力氣集中在一件事上。', '不用衝刺，維持節奏就會有成果。', '順風盤，記得收下別人給的好意。'] },
+        { min: 65, label: '小吉', color: '#3182ce', lines: ['平順的一天，小小推進也算數。', '別求完美，完成比漂亮重要。', '把注意力放回自己能控制的部分。'] },
+        { min: 55, label: '平', color: '#b7791f', lines: ['能量普通，適合整理而非開創。', '今天的目標是「不要把事情弄複雜」。', '保留餘裕，明天再全力出擊。'] },
+        { min: 0, label: '需留意', color: '#c53030', lines: ['步調偏亂，先把最重要的一件事做完就好。', '容易分心的一天，減量才是進度。', '照顧好睡眠和情緒，其他都可以延後。'] }
+    ];
+
+    function hashSeed(str) {
+        let h = 2166136261;
+        for (let i = 0; i < str.length; i++) {
+            h ^= str.charCodeAt(i);
+            h = Math.imul(h, 16777619);
+        }
+        return h >>> 0;
+    }
+
+    function mulberry32(seed) {
+        let a = seed >>> 0;
+        return function () {
+            a = (a + 0x6D2B79F5) >>> 0;
+            let t = Math.imul(a ^ (a >>> 15), 1 | a);
+            t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+            return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+        };
+    }
+
+    function pickSome(rng, arr, n) {
+        const pool = arr.slice();
+        const out = [];
+        while (out.length < n && pool.length) {
+            out.push(pool.splice(Math.floor(rng() * pool.length), 1)[0]);
+        }
+        return out;
+    }
+
+    function clampScore(n) { return Math.max(20, Math.min(99, Math.round(n))); }
+
+    // Real signals pulled from the user's own LifeOS data.
+    function fortuneSignals() {
+        const t = todayStr();
+        const now = new Date(t);
+
+        let habitRate = null;
+        if (state.habits.length > 0) {
+            const days = [];
+            for (let i = 0; i < 7; i++) {
+                const d = new Date(now);
+                d.setDate(now.getDate() - i);
+                days.push(d.toISOString().slice(0, 10));
+            }
+            const possible = state.habits.length * days.length;
+            const actual = state.habits.reduce((s, h) => s + days.filter(day => h.log[day]).length, 0);
+            habitRate = Math.round((actual / possible) * 100);
+        }
+
+        const openToday = state.tasks.filter(x => x.status !== 'done' && (x.due === t || x.status === 'today')).length;
+        const overdue = state.tasks.filter(x => x.status !== 'done' && x.due && x.due < t).length;
+        const { start, end } = weekRange();
+        const doneThisWeek = state.tasks.filter(x => x.completedAt && x.completedAt >= start && x.completedAt <= end).length;
+
+        const m = monthStr();
+        const budget = state.budgets[m];
+        const spent = state.expenses.filter(e => monthStr(e.date) === m).reduce((s, e) => s + Number(e.amount), 0);
+        const daysInMonth = new Date(now.getFullYear(), now.getMonth() + 1, 0).getDate();
+        const elapsedPct = Math.round((now.getDate() / daysInMonth) * 100);
+        let pace = null;    // 1.0 = 花費剛好跟上月份進度
+        let usedPct = null; // 已用掉的預算比例
+        if (budget && budget.total) {
+            usedPct = Math.round((spent / budget.total) * 100);
+            pace = (spent / budget.total) / Math.max(now.getDate() / daysInMonth, 0.05);
+        }
+
+        return { habitRate, openToday, overdue, doneThisWeek, pace, usedPct, elapsedPct, spent, budget, next: upcomingDates()[0] || null };
+    }
+
+    function computeFortune() {
+        const day = todayStr();
+        const rng = mulberry32(hashSeed('sugi-lifeos-fortune-' + day));
+        const sig = fortuneSignals();
+        const base = () => 48 + rng() * 46; // 48–94
+        // 有實際數據的面向，用「當日基底 × 真實表現」加權混合，讓分數說得出理由
+        const blend = (b, data, w) => b * (1 - w) + data * w;
+
+        const careerData = 72 - Math.min(24, sig.overdue * 8) + Math.min(20, sig.doneThisWeek * 4);
+        const career = blend(base(), careerData, 0.45);
+
+        const moneyBase = base();
+        const money = sig.pace === null ? moneyBase
+            : blend(moneyBase, sig.pace <= 1 ? 72 + (1 - sig.pace) * 25 : 72 - (sig.pace - 1) * 40, 0.45);
+
+        const healthBase = base();
+        const health = sig.habitRate === null ? healthBase
+            : blend(healthBase, 35 + sig.habitRate * 0.6, 0.5);
+
+        const social = base();
+
+        const items = [
+            { key: '事業運', score: clampScore(career) },
+            { key: '財運', score: clampScore(money) },
+            { key: '健康運', score: clampScore(health) },
+            { key: '人際運', score: clampScore(social) }
+        ];
+        const overall = clampScore(items.reduce((s, i) => s + i.score, 0) / items.length);
+        const tier = FORTUNE_TIERS.find(t => overall >= t.min);
+
+        return {
+            overall, items, tier, sig,
+            headline: tier.lines[Math.floor(rng() * tier.lines.length)],
+            color: FORTUNE_COLORS[Math.floor(rng() * FORTUNE_COLORS.length)],
+            number: 1 + Math.floor(rng() * 9),
+            direction: FORTUNE_DIRECTIONS[Math.floor(rng() * FORTUNE_DIRECTIONS.length)],
+            hour: FORTUNE_HOURS[Math.floor(rng() * FORTUNE_HOURS.length)],
+            dos: pickSome(rng, FORTUNE_DO, 2),
+            avoids: pickSome(rng, FORTUNE_AVOID, 2)
+        };
+    }
+
+    function fortuneInsights(f) {
+        const s = f.sig;
+        const out = [];
+        if (s.overdue > 0) out.push(`有 ${s.overdue} 件逾期任務壓著，先清掉一件，事業運立刻回穩。`);
+        if (s.openToday > 0) out.push(`今天排了 ${s.openToday} 件待辦，建議在 ${f.hour} 這段先解決最難的一件。`);
+        else if (s.overdue === 0) out.push('今天沒有到期的任務，適合處理一直被排擠的長線目標。');
+        if (s.habitRate !== null) {
+            out.push(s.habitRate >= 70
+                ? `近 7 天習慣達成率 ${s.habitRate}%，體感狀態穩，健康運被你自己撐起來。`
+                : `近 7 天習慣達成率只有 ${s.habitRate}%，今天補回一項就能拉高健康運。`);
+        }
+        if (s.pace !== null) {
+            out.push(s.pace > 1.05
+                ? `本月預算已用掉 ${s.usedPct}%，但月份才過 ${s.elapsedPct}%，財運提醒：今天先別開新的支出。`
+                : `本月預算用掉 ${s.usedPct}%、月份已過 ${s.elapsedPct}%，財務有餘裕，可安排一筆計畫內的花費。`);
+        } else if (s.spent > 0) {
+            out.push(`本月已記錄 NT$${s.spent.toLocaleString()} 支出，設定預算後財運分析會更準。`);
+        }
+        if (s.doneThisWeek > 0) out.push(`本週已完成 ${s.doneThisWeek} 件任務，動能還在，別讓它斷在今天。`);
+        if (s.next) {
+            out.push(s.next.daysLeft === 0
+                ? `「${s.next.title}」就是今天，把運勢全押在這件事上。`
+                : `距離「${s.next.title}」還有 ${s.next.daysLeft} 天，今天做一件準備就不會慌。`);
+        }
+        if (out.length === 0) out.push('目前 LifeOS 還沒有足夠資料，先新增任務與習慣，運勢分析會越來越貼近你。');
+        return out.slice(0, 4);
+    }
+
+    function renderFortune() {
+        const f = computeFortune();
+
+        document.getElementById('fortuneTierChip').textContent = f.tier.label;
+        const scoreEl = document.getElementById('fortuneScore');
+        scoreEl.textContent = f.overall;
+        scoreEl.style.color = f.tier.color;
+        const stars = Math.max(1, Math.round(f.overall / 20));
+        document.getElementById('fortuneStars').innerHTML =
+            `<span style="color:${f.tier.color}">${'★'.repeat(stars)}</span><span class="text-[#d2d2d7]">${'★'.repeat(5 - stars)}</span>`;
+        document.getElementById('fortuneHeadline').textContent = f.headline;
+
+        const barsEl = document.getElementById('fortuneBars');
+        barsEl.innerHTML = '';
+        f.items.forEach(item => {
+            const row = document.createElement('div');
+            row.innerHTML = `
+                <div class="flex items-center justify-between text-[11px] mb-1">
+                    <span class="text-[#6e6e73] font-semibold">${item.key}</span>
+                    <span class="font-semibold">${item.score}</span>
+                </div>
+                <div class="progress-track"><div class="progress-fill" style="width:${item.score}%;background:${f.tier.color}"></div></div>
+            `;
+            barsEl.appendChild(row);
+        });
+
+        const luckyEl = document.getElementById('fortuneLucky');
+        luckyEl.innerHTML = '';
+        [
+            { label: '幸運色', value: `<span class="inline-block w-2.5 h-2.5 rounded-full align-middle mr-1" style="background:${f.color.hex};border:1px solid #d2d2d7"></span>${f.color.name}` },
+            { label: '幸運數字', value: String(f.number) },
+            { label: '幸運方位', value: f.direction },
+            { label: '黃金時段', value: f.hour }
+        ].forEach(x => {
+            const box = document.createElement('div');
+            box.className = 'rounded-xl bg-[#f5f5f7] p-3';
+            box.innerHTML = `<p class="text-[10px] text-[#6e6e73] mb-0.5">${x.label}</p><p class="text-xs font-semibold">${x.value}</p>`;
+            luckyEl.appendChild(box);
+        });
+
+        document.getElementById('fortuneDo').textContent = f.dos.join('、');
+        document.getElementById('fortuneAvoid').textContent = f.avoids.join('、');
+
+        const insightsEl = document.getElementById('fortuneInsights');
+        insightsEl.innerHTML = '';
+        fortuneInsights(f).forEach(text => {
+            const li = document.createElement('li');
+            li.className = 'text-xs text-[#1d1d1f] leading-relaxed flex gap-2';
+            li.innerHTML = `<span class="text-[#a1a1a6]">·</span><span>${escapeHtml(text)}</span>`;
+            insightsEl.appendChild(li);
+        });
     }
 
     /* ===================== Goals ===================== */
@@ -883,7 +1136,7 @@
     }
 
     function renderAll() {
-        [renderToday, renderGoals, renderTasks, renderHabits, renderMoney, renderDates, renderWeeklyReview].forEach(fn => {
+        [renderToday, renderFortune, renderGoals, renderTasks, renderHabits, renderMoney, renderDates, renderWeeklyReview].forEach(fn => {
             try { fn(); } catch (err) { console.error(`${fn.name} failed`, err); }
         });
     }
