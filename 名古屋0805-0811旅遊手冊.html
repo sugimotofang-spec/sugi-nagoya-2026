@@ -207,6 +207,42 @@
                     <p class="text-slate-400 text-[10px]">＊本頁為一般性提醒，實際航班與退改政策以華航、Trip.com、東橫INN官方最新公告為準。</p>
                 </div>
             </details>
+
+            <!-- 兒童生病線上問診 -->
+            <details class="bg-white rounded-3xl border border-sky-200 shadow-sm overflow-hidden">
+                <summary class="cursor-pointer p-5 font-black text-sky-800 flex items-center justify-between"><span class="flex items-center gap-2"><span>🩺</span> 小孩感冒發燒／線上問診</span><span class="text-slate-300 text-xs">▾</span></summary>
+                <div class="px-5 pb-5 space-y-3 text-xs text-slate-600 leading-relaxed">
+                    <p class="text-sky-700 font-bold">旅途中小朋友如果突然感冒、發燒，不一定要馬上衝急診——可以先透過視訊線上問診，由醫師判斷嚴重程度、開立處方，藥局取藥或送藥到飯店，省去語言不通找診所的麻煩。</p>
+
+                    <div class="bg-slate-50 rounded-xl p-3">
+                        <p class="font-bold text-slate-700 mb-2">📱 線上視訊問診（中文可通）</p>
+                        <div class="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <a href="https://oh-doctor.com/zh-tw/" target="_blank" class="bg-[#0071e3] text-white px-3 py-2 rounded-lg font-bold text-[11px] text-center">OH Dr. 多語言線上診療（繁中）</a>
+                            <a href="https://travel.oh-doctor.com/jp" target="_blank" class="bg-[#0071e3] text-white px-3 py-2 rounded-lg font-bold text-[11px] text-center">OH Dr. for TRAVELER（旅客專用頁）</a>
+                        </div>
+                        <p class="text-[10px] text-slate-400 mt-2">OH Dr. 支援中文視訊問診、藥局取藥或送藥到飯店，適合發燒、咳嗽、腸胃不適等常見症狀，記得先準備信用卡線上付費。</p>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-3">
+                        <p class="font-bold text-slate-700 mb-2">🏨 住宿房內線上診療（若合作旅館適用）</p>
+                        <a href="https://www.hoteldedoctor24.com/hotel" target="_blank" class="block bg-[#1d1d1f] text-white px-3 py-2 rounded-lg font-bold text-[11px] text-center">HOTEL de DOCTOR 24（24小時・22種語言）</a>
+                        <p class="text-[10px] text-slate-400 mt-2">這是專為訪日旅客設計的24小時線上診療服務，若入住的飯店房內有合作QR code可以直接掃碼使用；R&B、東橫INN是否有合作，出發前可以先詢問櫃檯確認。</p>
+                    </div>
+
+                    <div class="bg-slate-50 rounded-xl p-3">
+                        <p class="font-bold text-slate-700 mb-2">☎️ 免費多語言醫療電話諮詢</p>
+                        <div class="flex justify-between items-center bg-white rounded-xl px-3 py-2 border border-slate-100"><span class="font-bold text-slate-700">AMDA國際醫療情報中心（中文：週二／週四 10:00-15:00）</span><a href="tel:0362339266" class="font-black text-[#0071e3]">03-6233-9266</a></div>
+                        <p class="text-[10px] text-slate-400 mt-2">免費協助用中文說明症狀、協助尋找可用外語溝通的醫療機構，非緊急重症時可先打這支電話問怎麼處理；平日 10:00-16:00（中文限週二、四）。</p>
+                    </div>
+
+                    <div class="bg-amber-50 border border-amber-200 rounded-xl p-3">
+                        <p class="font-bold text-amber-900 mb-1">⚠️ 什麼狀況要直接送醫，不要只靠線上問診</p>
+                        <p>高燒不退合併意識不清、抽搐、呼吸困難、嚴重脫水（哭沒有眼淚、尿量明顯變少）等情況，請直接叫救護車（119）或前往最近醫院急診，線上問診僅適合一般感冒發燒等非緊急症狀的初步判斷。</p>
+                    </div>
+
+                    <p class="text-slate-400 text-[10px]">＊上述服務資訊以各官方網站最新公告為準，出發前建議先確認是否需要事先下載App或註冊帳號。</p>
+                </div>
+            </details>
         </section>
 
         <!-- 每日行程 -->
@@ -325,7 +361,7 @@
 
     <script>
         const tripData = [
-            { day: 1, date: "8/5 (三)", title: "抵達首夜", emoji: "✈️", spot: "中部機場 (NGO)", food: "機場美食街", cost: "住宿: ¥10,400", transport: "22:00 抵達，步行 10 分鐘入住民宿。", desc: "Sugi 一家首航！4 樓有許多扭蛋機與商店，便利商店在 1F/4F 都有。", links: [{title: "中部機場官網", url: "https://www.centrair.jp/tch/"}, {title: "📖 2026中部國際機場攻略（MATCHA）", url: "https://matcha-jp.com/tw/18570"}], klook: null, wifeNote: "注意：22:00 抵達後手續約 1 小時，入住東橫 INN 約 23:30。",
+            { day: 1, date: "8/5 (三)", title: "抵達首夜", emoji: "✈️", spot: "中部機場 (NGO)", food: "機場美食街", cost: "住宿: ¥10,400", transport: "22:00 抵達，步行 10 分鐘入住民宿。", desc: "Sugi 一家首航！4 樓有許多扭蛋機與商店，便利商店在 1F/4F 都有。<br><br>🛡️ <strong>出發前別忘了投保旅遊平安險：</strong>建議在出發前於線上完成投保，保險期間務必完整涵蓋「出門到回家」，不要只保飛機上的時間。線上投保通常只要輸入出生年月日、旅遊地區與起訖時間即可試算保費，也可以比較兩三家的醫療險額度與海外突發疾病保障後再決定。", links: [{title: "中部機場官網", url: "https://www.centrair.jp/tch/"}, {title: "📖 2026中部國際機場攻略（MATCHA）", url: "https://matcha-jp.com/tw/18570"}, {title: "🛡️ 富邦人壽旅遊平安險線上投保", url: "https://direct.fubonlife.com.tw/m/qta/travelaccident"}, {title: "📖 2026日本旅平險比較與教學（Roo.Cash）", url: "https://roo.cash/blog/japan-travel-accident-insurance/"}, {title: "📖 東京海上日動VJW日本境內保險投保教學", url: "https://finfo.tw/blog/insurance-travel/%E6%97%A5%E6%9C%AC%E6%97%85%E9%81%8A%E6%97%85%E5%B9%B3%E9%9A%AA%E6%80%8E%E9%BA%BC%E4%BF%9D%EF%BC%9F%E6%9D%B1%E4%BA%AC%E6%B5%B7%E4%B8%8A%E6%97%A5%E5%8B%95%E6%8A%95%E4%BF%9D%E6%96%B9%E5%BC%8F%EF%BC%8C%E5%8F%B0%E6%97%A5%E6%97%85%E5%B9%B3%E9%9A%AA%E7%B5%84%E5%90%88%E6%8A%80%E5%85%AC%E9%96%8B"}], klook: null, wifeNote: "注意：22:00 抵達後手續約 1 小時，入住東橫 INN 約 23:30。出發前記得先線上投保旅遊平安險並把保單號碼、海外急難救援電話存進手機，卡片背面海外掛失電話也建議先拍照存起來（緊急聯絡卡工具裡有留空白欄位可以填）。",
               mapQuery: "中部国際空港", coords: {lat: 34.8584, lon: 136.8054}, climateNote: "名古屋周邊 8 月平均高溫約 34°C／低溫約 26°C，濕度高，午後偶有雷陣雨。",
               foodSpots: [{name: "中部國際機場 4F 美食街", mapQuery: "中部国際空港 4階 フードコート"}],
               costBreakdown: { transport: 0, food: 3000, ticket: 0, other: 1500 } },
