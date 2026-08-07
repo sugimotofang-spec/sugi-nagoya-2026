@@ -348,10 +348,12 @@
                 <div class="px-4 pb-4"><div id="expenseList" class="space-y-4"></div></div>
             </details>
 
-            <div class="flex justify-end mt-4">
+            <div class="flex justify-end gap-4 mt-4">
+                <button onclick="exportExpenses()" class="text-[10px] text-[#0071e3] underline font-bold">📤 匯出同步代碼</button>
+                <button onclick="importExpenses()" class="text-[10px] text-[#0071e3] underline font-bold">📥 匯入同步代碼</button>
                 <button onclick="resetExpenses()" class="text-[10px] text-slate-400 underline font-bold">清空所有記帳紀錄</button>
             </div>
-            <p class="text-[9px] text-slate-400 mt-3">＊記帳紀錄儲存在這台裝置的瀏覽器中（localStorage），換手機或清除瀏覽器資料會遺失，建議旅程結束後截圖保存。</p>
+            <p class="text-[9px] text-slate-400 mt-3">＊記帳紀錄儲存在這台裝置的瀏覽器中（localStorage），換手機或清除瀏覽器資料會遺失。不同裝置之間不會自動同步——如果手機和電腦都有輸入資料，請用「匯出／匯入同步代碼」手動同步一次，或旅程結束後截圖保存。</p>
         </section>
     </main>
 
@@ -373,7 +375,7 @@
               mapQuery: "レゴランド・ジャパン", coords: {lat: 35.0837, lon: 136.8935}, climateNote: "名古屋周邊 8 月平均高溫已多次達 40°C 酷暑日，戶外樂園請務必防曬、補水並安排室內中場休息。",
               foodSpots: [{name: "名站地下街 ESCA", mapQuery: "エスカ地下街 名古屋"}, {name: "台灣拉麵 味仙 今池本店", mapQuery: "味仙 今池本店"}],
               costBreakdown: { transport: 2900, food: 5000, ticket: 20300, other: 2000 } },
-            { day: 4, date: "8/8 (六)", title: "水族館／名古屋城夏まつり（彈性夜間）", emoji: "🐬", spot: "名古屋港 (E07)", food: "JETTY、蓬萊軒 或 名古屋城夏まつり屋台", cost: "Klook 參考起價 NT$390/人（實際依日期變動，請以頁面即時報價為準；注意這是名古屋港水族館，非 SEA LIFE 名古屋水族館，兩者是不同景點）；名古屋城夏まつり入城券大人¥500、國中以下免費", transport: "地鐵名港線直達水族館。若晚上要去名古屋城夏まつり：地鐵名城線至「名古屋城」站7號出口步行約5分。", desc: "假日人潮較多，建議開館前抵達或提前上網購票，必看虎鯨表演。<br><br>🏯 <strong>晚上彈性二選一：</strong>①原方案：回市區吃蓬萊軒鰻魚飯，輕鬆收尾。②2026年8/8-8/16剛好是「名古屋城夏まつり」期間，開放至21:00（最後入場20:00），每晚18:00天守閣前有大盆踊り大会，西之丸「鯱食堂」屋台區有章魚燒、刨冰、名古屋在地小吃和金魚撈等縁日遊戲，夜間天守閣點燈氣氛很好，適合帶孩子體驗日本夏日祭典；但水族館本身已經是一整天行程，晚上再衝夏まつり會拉得比較長，視當天孩子體力和天氣狀況現場決定，不用勉強。", links: [{title: "名古屋港水族館", url: "https://nagoyaaqua.jp/t-chinese/"}, {title: "📖 名古屋水族館攻略", url: "https://bjsmile.tw/nagoyaaqua/"}, {title: "名古屋城夏まつり官方資訊", url: "https://www.nagoyajo.city.nagoya.jp/event/2026/07/20260708_4897.html"}], klook: "https://www.klook.com/zh-TW/activity/1759-port-of-nagoya-public-aquarium-nagoya/", wifeNote: "假日建議提前上網購票或早點排隊。今天住 R&B 第三晚，不用搬行李，晚上要不要衝夏まつり比較沒有搬行李壓力，體力允許再去就好，別硬撐。",
+            { day: 4, date: "8/8 (六)", title: "水族館＋名古屋城夏まつり（盆踊り・屋台）", emoji: "🐬", spot: "名古屋港 (E07) → 名古屋城", food: "JETTY 或午餐簡食、名古屋城夏まつり屋台（鯱食堂）晚餐", cost: "Klook 參考起價 NT$390/人（實際依日期變動，請以頁面即時報價為準；注意這是名古屋港水族館，非 SEA LIFE 名古屋水族館，兩者是不同景點）；名古屋城夏まつり入城券大人¥500、國中以下免費（浴衣／和裝優惠價¥400）", transport: "上午～15:00：地鐵名港線直達名古屋港水族館。<br>15:00起回程：搭名港線→金山，轉乘往名古屋駅方向（JR或名鉄），約35-40分可到名古屋駅。<br>16:45-17:00：名古屋駅出發前往名古屋城——搭櫻通線（名古屋駅→久屋大通）轉名城線至「名古屋城駅」，最快約10分、車資約¥240；或搭觀光巴士「メーグル」約23分、¥210，帶小孩坐起來較悠閒。<br>20:00後：視小朋友體力，同樣路線10分鐘內回 R&B。", desc: "假日人潮較多，建議開館前抵達或提前上網購票，必看虎鯨表演。<br><br>⏰ <strong>下午3點後時段安排：</strong><br>~15:00　水族館結束，搭地鐵名港線回程（名古屋港→金山，轉乘往名古屋駅方向）<br>15:00–15:40　回程移動，約35-40分鐘可到名古屋駅<br>15:40–16:45　回 R&B HOTEL 休息、沖涼、放行李，讓小朋友喘口氣、補個眠或吃點輕食<br>16:45–17:00　從名古屋駅出發前往名古屋城<br>~17:00　抵達名古屋城，搭櫻通線轉名城線最快約10分、¥240，或搭「メーグル」觀光巴士約23分、¥210<br>17:00–20:00左右　逛西之丸、二之丸屋台，看盆踊り，吃晚餐<br>20:00後　視小朋友體力決定何時收工，同樣路線10分鐘內回飯店<br><br>🏯 <strong>名古屋城夏まつり（官方確認資訊）：</strong>2026年8/8（六）～8/16（日）期間，開園9:00-20:30、閉門21:00，每晚18:00天守閣前有大盆踊り大会（本格やぐら搭建），西之丸「鯱食堂」屋台區有章魚燒、刨冰、金魚撈等縁日遊戲，夜間天守閣點燈氣氛很好，適合帶孩子體驗日本夏日祭典。名城線該站已於2023年正式改名為「名古屋城駅」（原市役所駅），7號出口步行約4-5分達東門。<br><br>ℹ️ 水族館已經是一整天行程，傍晚回飯店稍作休息再出發夏まつり，比直接衝更適合帶小孩，體力不夠也可以直接跳過晚上這段、在飯店輕鬆收尾。<br><br>【資料不足，待查證】櫻通線→名城線轉乘10分鐘、¥240 為一般區間車資估算，非官方逐段公告，實際請以站內看板顯示為準。", links: [{title: "名古屋港水族館", url: "https://nagoyaaqua.jp/t-chinese/"}, {title: "📖 名古屋水族館攻略", url: "https://bjsmile.tw/nagoyaaqua/"}, {title: "名古屋城夏まつり官方資訊", url: "https://www.nagoyajo.city.nagoya.jp/event/2026/07/20260708_4897.html"}], klook: "https://www.klook.com/zh-TW/activity/1759-port-of-nagoya-public-aquarium-nagoya/", wifeNote: "假日建議提前上網購票或早點排隊。今天住 R&B 第三晚，不用搬行李。水族館15:00左右結束，先搭地鐵回飯店休息、沖涼、放行李，喘口氣再出發夏まつり，別直接從水族館衝過去太累。17:00左右到名古屋城，18:00看盆踊り，屋台區吃晚餐、金魚撈給孩子玩，20:00後看體力決定何時收工，別硬撐。",
               mapQuery: "名古屋港水族館", coords: {lat: 35.0847, lon: 136.8836}, climateNote: "名古屋港周邊 8 月平均高溫約 33°C／低溫約 26°C，海風稍涼但濕度仍高。",
               foodSpots: [{name: "JETTY (港區景觀餐廳)", mapQuery: "JETTY 名古屋港"}, {name: "熱田蓬萊軒 本店 (鰻魚飯)", mapQuery: "あつた蓬莱軒 本店"}],
               costBreakdown: { transport: 800, food: 6000, ticket: 6200, other: 2000 } },
@@ -720,6 +722,48 @@
             saveExpenses([]);
             renderExpenses();
             renderFixedCosts();
+        }
+
+        // ---- 記帳跨裝置同步（手動代碼匯出／匯入，因網站無後端資料庫，無法自動同步）----
+        function exportExpenses() {
+            const list = loadExpenses();
+            let code;
+            try {
+                code = btoa(unescape(encodeURIComponent(JSON.stringify(list))));
+            } catch (e) {
+                alert('匯出失敗，請稍後再試一次。');
+                return;
+            }
+            const finish = () => {
+                window.prompt('這是同步代碼（已嘗試自動複製到剪貼簿，也可以自己長按全選複製）。\n請到另一台裝置的記帳頁面點「📥 匯入同步代碼」，貼上這段文字：', code);
+            };
+            if (navigator.clipboard && navigator.clipboard.writeText) {
+                navigator.clipboard.writeText(code).then(finish).catch(finish);
+            } else {
+                finish();
+            }
+        }
+
+        function importExpenses() {
+            const code = window.prompt('請貼上從另一台裝置「📤 匯出同步代碼」複製來的文字：');
+            if (!code || !code.trim()) return;
+            let list;
+            try {
+                list = JSON.parse(decodeURIComponent(escape(atob(code.trim()))));
+                if (!Array.isArray(list)) throw new Error('bad format');
+            } catch (e) {
+                alert('匯入失敗，代碼格式不正確，請確認完整複製貼上。');
+                return;
+            }
+            const replace = confirm(`即將匯入 ${list.length} 筆紀錄。\n\n按「確定」＝取代這台裝置目前的所有記帳紀錄\n按「取消」＝合併（保留這台裝置原本的紀錄，把匯入的加進去，可能會重複）`);
+            if (replace) {
+                saveExpenses(list);
+            } else {
+                saveExpenses(loadExpenses().concat(list));
+            }
+            renderExpenses();
+            renderFixedCosts();
+            alert('同步完成！');
         }
 
         // ---- 匯率速算機 ----
